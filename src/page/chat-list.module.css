@@ -1,0 +1,9 @@
+.item {
+    width: 100%;
+    cursor: pointer;
+    transition: 0.3s all;
+}
+
+.item:hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
