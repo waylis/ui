@@ -2,7 +2,7 @@ import { Flex, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/
 import { useEffect, useRef, type FC } from "react";
 import type { Command, Message } from "../api/types";
 import { useMessageStore } from "../store/messages";
-import { useDarkenSchemeColor } from "../hooks/useColors";
+import { useLighterSchemeColor } from "../hooks/useColors";
 import { useCommandStore } from "../store/commands";
 
 export const ChatArea = () => {
@@ -30,16 +30,22 @@ export const ChatArea = () => {
                 </ScrollArea>
             )}
 
-            <Flex justify="center" align="center">
-                {messages.length === 0 && (
-                    <Paper radius="md" p="xl" ta="center">
-                        <Text fw="bolder" c="dimmed">
-                            Welcome
-                        </Text>
-                        <Text c="dimmed">To start choose a command</Text>
-                    </Paper>
-                )}
-            </Flex>
+            {messages.length === 0 && <WelcomeLabel />}
+        </Flex>
+    );
+};
+
+const WelcomeLabel = () => {
+    const bgColor = useLighterSchemeColor();
+
+    return (
+        <Flex justify="center" align="center">
+            <Paper bg={bgColor} radius="md" p="xl" ta="center">
+                <Text fw="bolder" c="dimmed">
+                    Welcome
+                </Text>
+                <Text c="dimmed">To start choose a command</Text>
+            </Paper>
         </Flex>
     );
 };
@@ -52,7 +58,7 @@ interface ChatMessageProps {
 
 const ChatMessage: FC<ChatMessageProps> = ({ message, commands, primaryColor }) => {
     const isUser = message.senderID !== "system";
-    const bgColor = useDarkenSchemeColor();
+    const bgColor = useLighterSchemeColor();
     const isCommand = message.body.type === "command";
 
     const content = () => {

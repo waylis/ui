@@ -13,7 +13,7 @@ export default function App() {
     return (
         <MantineProvider defaultColorScheme="dark" theme={{ primaryColor: "green" }}>
             <ModalsProvider modalProps={{ centered: true, m: 0 }}>
-                <Notifications />
+                <Notifications position="top-center" />
                 <Page />
             </ModalsProvider>
         </MantineProvider>

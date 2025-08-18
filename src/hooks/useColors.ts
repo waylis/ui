@@ -1,6 +1,6 @@
 import { useMantineColorScheme, useMantineTheme } from "@mantine/core";
 
-export const useDarkenSchemeColor = () => {
+export const useLighterSchemeColor = () => {
     const scheme = useMantineColorScheme();
     const theme = useMantineTheme();
 
