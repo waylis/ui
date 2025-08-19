@@ -1,11 +1,12 @@
-import { Button, Flex, NumberInput, Paper, Textarea } from "@mantine/core";
+import { Button, Flex, NumberInput, Paper, Select, Textarea } from "@mantine/core";
 import { useState, type FC } from "react";
 import { useMessageStore, type CurrentReply } from "../store/messages";
-import type { Chat, NumberLimits } from "../api/types";
+import type { Chat, DatetimeLimits, NumberLimits, OptionLimits } from "../api/types";
 import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
 import { Spotlight, spotlight } from "@mantine/spotlight";
-import { errNotify } from "../utils/notifications";
+import { errNotify, warnNotify } from "../utils/notifications";
+import { DateTimePicker } from "@mantine/dates";
 
 export const InputArea = () => {
     const currentReply = useMessageStore((s) => s.currentReply);
@@ -20,6 +21,15 @@ export const InputArea = () => {
                 )}
                 {currentReply?.restriction?.bodyType === "number" && (
                     <NumberForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "boolean" && (
+                    <BooleanForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "datetime" && (
+                    <DatetimeForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "option" && (
+                    <OptionForm currentReply={currentReply} chat={activeChat!} />
                 )}
             </Paper>
         </Flex>
@@ -62,7 +72,7 @@ interface FormProps {
 
 const TextForm: FC<FormProps> = ({ chat, currentReply }) => {
     const [loading, setLoading] = useState(false);
-    const [content, setContent] = useState("");
+    const [value, setValue] = useState("");
     const sendMessage = useMessageStore((s) => s.sendMessage);
 
     const sendText = async (content: string) => {
@@ -79,7 +89,7 @@ const TextForm: FC<FormProps> = ({ chat, currentReply }) => {
     const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            if (content.length > 0) sendText(content);
+            if (value.length > 0) sendText(value);
         }
     };
 
@@ -89,8 +99,8 @@ const TextForm: FC<FormProps> = ({ chat, currentReply }) => {
                 variant="filled"
                 w="100%"
                 autoFocus
-                value={content}
-                onChange={(event) => setContent(event.currentTarget.value)}
+                value={value}
+                onChange={(event) => setValue(event.currentTarget.value)}
                 minRows={2}
                 maxRows={6}
                 size="md"
@@ -101,7 +111,7 @@ const TextForm: FC<FormProps> = ({ chat, currentReply }) => {
                         variant="transparent"
                         pos="absolute"
                         right={0}
-                        onClick={() => sendText(content)}
+                        onClick={() => sendText(value)}
                         loading={loading}
                     >
                         OK
@@ -136,9 +146,8 @@ const NumberForm: FC<FormProps> = ({ chat, currentReply }) => {
     };
 
     return (
-        <Flex gap={8} w="100%" align="center">
+        <Flex gap={8} w="100%" align="center" justify="center">
             <NumberInput
-                w="100%"
                 allowDecimal={!(currentReply.restriction?.bodyLimits as NumberLimits)?.integerOnly}
                 max={(currentReply.restriction?.bodyLimits as NumberLimits)?.max}
                 min={(currentReply.restriction?.bodyLimits as NumberLimits)?.min}
@@ -156,6 +165,124 @@ const NumberForm: FC<FormProps> = ({ chat, currentReply }) => {
                 loading={loading}
                 variant="transparent"
                 onClick={() => sendNumber(+value)}
+            >
+                OK
+            </Button>
+        </Flex>
+    );
+};
+
+const BooleanForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendBoolean = async (content: boolean) => {
+        setLoading(true);
+        try {
+            await sendMessage({ body: { type: "boolean", content }, chatID: chat.id, replyTo: currentReply.to });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <Button onClick={() => sendBoolean(true)} loading={loading} variant="light" w="90px" color="green">
+                Yes
+            </Button>
+            <Button onClick={() => sendBoolean(false)} loading={loading} variant="light" w="90px" color="red">
+                No
+            </Button>
+        </Flex>
+    );
+};
+
+const DatetimeForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<Date | null>(null);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendDatetime = async (content: Date | null) => {
+        if (!content) {
+            warnNotify("Please specify the date and time");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await sendMessage({
+                body: { type: "datetime", content: content.toISOString() },
+                chatID: chat.id,
+                replyTo: currentReply.to,
+            });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <DateTimePicker
+                minDate={(currentReply.restriction?.bodyLimits as DatetimeLimits).min}
+                maxDate={(currentReply.restriction?.bodyLimits as DatetimeLimits).max}
+                w={220}
+                value={value}
+                onChange={(date) => setValue(date ? new Date(date) : null)}
+                placeholder="Pick date and time"
+            />
+            <Button
+                size="sm"
+                disabled={!value}
+                loading={loading}
+                variant="transparent"
+                onClick={() => sendDatetime(value)}
+            >
+                OK
+            </Button>
+        </Flex>
+    );
+};
+
+const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<string | null>(null);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendOption = async (content: string) => {
+        setLoading(true);
+        try {
+            await sendMessage({ body: { type: "option", content }, chatID: chat.id, replyTo: currentReply.to });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <Select
+                miw={200}
+                data={(currentReply.restriction?.bodyLimits as OptionLimits).options.map((o) => ({
+                    value: o.value,
+                    label: o.label ?? o.value,
+                }))}
+                comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
+                allowDeselect={false}
+                value={value}
+                onChange={setValue}
+                placeholder="Pick a value"
+            />
+            <Button
+                size="sm"
+                disabled={!value}
+                loading={loading}
+                variant="transparent"
+                onClick={() => sendOption(value!)}
             >
                 OK
             </Button>

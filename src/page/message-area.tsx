@@ -1,11 +1,11 @@
 import { Flex, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
 import { useEffect, useRef, type FC } from "react";
-import type { Command, Message } from "../api/types";
+import type { Command, Message, OptionLimits } from "../api/types";
 import { useMessageStore } from "../store/messages";
 import { useLighterSchemeColor } from "../hooks/useColors";
 import { useCommandStore } from "../store/commands";
 
-export const ChatArea = () => {
+export const MessageArea = () => {
     const viewport = useRef<HTMLDivElement | null>(null);
     const messages = useMessageStore((s) => s.messages);
     const commands = useCommandStore((s) => s.commands);
@@ -24,7 +24,13 @@ export const ChatArea = () => {
                 <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
                     <Flex direction="column" maw={765} m="0 auto">
                         {messages.map((m) => (
-                            <ChatMessage key={m.id} message={m} commands={commands} primaryColor={theme.primaryColor} />
+                            <ChatMessage
+                                key={m.id}
+                                message={m}
+                                messages={messages}
+                                commands={commands}
+                                primaryColor={theme.primaryColor}
+                            />
                         ))}
                     </Flex>
                 </ScrollArea>
@@ -52,11 +58,12 @@ const WelcomeLabel = () => {
 
 interface ChatMessageProps {
     message: Message;
+    messages: Message[];
     commands: Command[];
     primaryColor: string;
 }
 
-const ChatMessage: FC<ChatMessageProps> = ({ message, commands, primaryColor }) => {
+const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor }) => {
     const isUser = message.senderID !== "system";
     const bgColor = useLighterSchemeColor();
     const isCommand = message.body.type === "command";
@@ -65,6 +72,20 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, commands, primaryColor }) 
         if (isCommand) {
             const command = commands.find((c) => c.value === message.body.content);
             return command?.label || command?.value || "Unknown command";
+        }
+
+        if (message.body.type === "boolean") return message.body.content ? "Yes" : "No";
+        if (message.body.type === "datetime") return new Date(message.body.content).toLocaleString();
+        if (message.body.type === "option") {
+            const value = message.body.content;
+            if (!message.replyTo) return value;
+            const sys = messages.find((m) => m.id === message.replyTo);
+            if (!sys) return value;
+
+            return (
+                (sys.replyRestriction?.bodyLimits as OptionLimits).options.find((o) => o.value === value)?.label ??
+                value
+            );
         }
 
         return message.body.content as string;

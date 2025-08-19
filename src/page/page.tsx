@@ -1,6 +1,6 @@
 import { Divider, Flex, LoadingOverlay } from "@mantine/core";
 import { Header } from "./header";
-import { ChatArea } from "./chat-area";
+import { MessageArea } from "./message-area";
 import { InputArea } from "./input-area";
 import { useChatStore } from "../store/chats";
 import { useEffect, useState } from "react";
@@ -66,7 +66,7 @@ export const Page = () => {
             <Header />
             <Divider />
 
-            <ChatArea />
+            <MessageArea />
 
             <InputArea />
         </Flex>

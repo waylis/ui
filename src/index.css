@@ -2,6 +2,10 @@
     font-family: "Courier New", Courier, monospace;
 }
 
+body {
+    overflow: hidden;
+}
+
 .mantine-Modal-inner {
     padding-inline: 0.5rem;
 }
