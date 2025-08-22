@@ -1,7 +1,7 @@
-import { Button, Flex, NumberInput, Paper, Select, Textarea } from "@mantine/core";
+import { Button, Flex, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
 import { useState, type FC } from "react";
 import { useMessageStore, type CurrentReply } from "../store/messages";
-import type { Chat, DatetimeLimits, NumberLimits, OptionLimits } from "../api/types";
+import type { Chat, DatetimeLimits, NumberLimits, OptionLimits, OptionsLimits } from "../api/types";
 import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
 import { Spotlight, spotlight } from "@mantine/spotlight";
@@ -30,6 +30,9 @@ export const InputArea = () => {
                 )}
                 {currentReply?.restriction?.bodyType === "option" && (
                     <OptionForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "options" && (
+                    <OptionsForm currentReply={currentReply} chat={activeChat!} />
                 )}
             </Paper>
         </Flex>
@@ -283,6 +286,49 @@ const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
                 loading={loading}
                 variant="transparent"
                 onClick={() => sendOption(value!)}
+            >
+                OK
+            </Button>
+        </Flex>
+    );
+};
+
+const OptionsForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<string[]>([]);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendOption = async (content: string[]) => {
+        setLoading(true);
+        try {
+            await sendMessage({ body: { type: "options", content }, chatID: chat.id, replyTo: currentReply.to });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <MultiSelect
+                miw={200}
+                data={(currentReply.restriction?.bodyLimits as OptionsLimits).options.map((o) => ({
+                    value: o.value,
+                    label: o.label ?? o.value,
+                }))}
+                maxValues={(currentReply.restriction?.bodyLimits as OptionsLimits).maxAmount}
+                comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
+                value={value}
+                onChange={setValue}
+                placeholder={value.length === 0 ? `Pick some values` : undefined}
+            />
+            <Button
+                size="sm"
+                disabled={!value}
+                loading={loading}
+                variant="transparent"
+                onClick={() => sendOption(value)}
             >
                 OK
             </Button>

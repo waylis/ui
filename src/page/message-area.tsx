@@ -79,6 +79,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
         if (message.body.type === "option") {
             const value = message.body.content;
             if (!message.replyTo) return value;
+
             const sys = messages.find((m) => m.id === message.replyTo);
             if (!sys) return value;
 
@@ -86,6 +87,25 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
                 (sys.replyRestriction?.bodyLimits as OptionLimits).options.find((o) => o.value === value)?.label ??
                 value
             );
+        }
+
+        if (message.body.type === "options") {
+            const values = message.body.content;
+            if (!message.replyTo) return values;
+
+            const sys = messages.find((m) => m.id === message.replyTo);
+            if (!sys) return values;
+
+            let labels: string[] = [];
+            for (const value of values) {
+                const label =
+                    (sys.replyRestriction?.bodyLimits as OptionLimits).options.find((o) => o.value === value)?.label ??
+                    value;
+
+                labels.push(label);
+            }
+
+            return labels.join(", ");
         }
 
         return message.body.content as string;
