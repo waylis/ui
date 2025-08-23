@@ -10,7 +10,7 @@ interface ChatStore {
     limit: number;
     endReached: boolean;
 
-    fetchChats(): Promise<Chat[]>;
+    fetchChats(activeChatID?: string): Promise<Chat[]>;
     setActiveChat(chat: Chat | null): void;
     createChat(name?: string): Promise<Chat>;
     deleteChat(id: string): Promise<Chat>;
@@ -24,11 +24,12 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     limit: 20,
     endReached: false,
 
-    async fetchChats() {
+    async fetchChats(activeChatID?: string) {
         const chats = await api.getChats(get().page, get().limit);
 
         if (chats.length && !get().activeChat) {
-            set({ chats, activeChat: chats[0] });
+            const activeChat = chats.find((c) => c.id === activeChatID) || chats[0];
+            set({ chats, activeChat });
         } else {
             set({ chats });
         }
@@ -37,6 +38,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     },
 
     setActiveChat(chat: Chat | null) {
+        const url = new URL(window.location.href);
+        chat ? url.searchParams.set("chat", chat.id) : url.searchParams.delete("chat");
+        window.history.replaceState({}, "", url);
+
         set({ activeChat: chat });
     },
 

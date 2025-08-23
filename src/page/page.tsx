@@ -36,7 +36,8 @@ export const Page = () => {
     const loadResources = async () => {
         setLoading(true);
         try {
-            await Promise.all([fetchCommands(), fetchChats()]);
+            const activeChatID = new URLSearchParams(location.search).get("chat") ?? "";
+            await Promise.all([fetchCommands(), fetchChats(activeChatID)]);
         } catch (error) {
             errNotify(error);
         } finally {

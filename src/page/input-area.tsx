@@ -1,7 +1,15 @@
 import { Button, FileInput, Flex, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
 import { useState, type FC } from "react";
 import { useMessageStore, type CurrentReply } from "../store/messages";
-import type { Chat, DatetimeLimits, FileLimits, NumberLimits, OptionLimits, OptionsLimits } from "../api/types";
+import type {
+    Chat,
+    DatetimeLimits,
+    FileLimits,
+    FileMeta,
+    NumberLimits,
+    OptionLimits,
+    OptionsLimits,
+} from "../api/types";
 import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
 import { Spotlight, spotlight } from "@mantine/spotlight";
@@ -38,6 +46,9 @@ export const InputArea = () => {
                 )}
                 {currentReply?.restriction?.bodyType === "file" && (
                     <FileForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "files" && (
+                    <FilesForm currentReply={currentReply} chat={activeChat!} />
                 )}
             </Paper>
         </Flex>
@@ -382,6 +393,63 @@ const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
                 loading={loading}
                 variant="transparent"
                 onClick={() => sendFile(value!)}
+            >
+                OK
+            </Button>
+        </Flex>
+    );
+};
+
+const FilesForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<File[]>([]);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendFiles = async (files: File[]) => {
+        setLoading(true);
+        try {
+            const maxSize = (currentReply.restriction?.bodyLimits as FileLimits)?.maxSize;
+
+            const requests: Promise<FileMeta>[] = [];
+            for (const file of files) {
+                if (maxSize && file.size > maxSize) {
+                    warnNotify(
+                        `The file "${file.name}" is too large. The maximum allowed size is ${formatBytes(maxSize)}.`
+                    );
+                    return;
+                }
+
+                requests.push(api.uploadFile(file));
+            }
+
+            const content = await Promise.all(requests);
+            await sendMessage({ body: { type: "files", content }, chatID: chat.id, replyTo: currentReply.to });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <FileInput
+                miw={200}
+                maw={500}
+                accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
+                multiple
+                clearable
+                value={value}
+                onChange={setValue}
+                placeholder="Pick files"
+            />
+
+            <Button
+                size="sm"
+                disabled={!value}
+                loading={loading}
+                variant="transparent"
+                onClick={() => sendFiles(value)}
             >
                 OK
             </Button>

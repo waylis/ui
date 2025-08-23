@@ -75,6 +75,16 @@ interface ChatMessageProps {
     primaryColor: string;
 }
 
+function resolveLabels(values: string[], message: Message, messages: Message[]): string[] {
+    if (!message.replyTo) return values;
+
+    const sys = messages.find((m) => m.id === message.replyTo);
+    if (!sys) return values;
+
+    const options = (sys.replyRestriction?.bodyLimits as OptionLimits).options;
+    return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
+}
+
 const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor }) => {
     const isUser = message.senderID !== "system";
     const bgColor = useLighterSchemeColor();
@@ -87,41 +97,23 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
         }
 
         if (message.body.type === "boolean") return message.body.content ? "Yes" : "No";
+
         if (message.body.type === "datetime") return new Date(message.body.content).toLocaleString();
+
         if (message.body.type === "option") {
-            const value = message.body.content;
-            if (!message.replyTo) return value;
-
-            const sys = messages.find((m) => m.id === message.replyTo);
-            if (!sys) return value;
-
-            return (
-                (sys.replyRestriction?.bodyLimits as OptionLimits).options.find((o) => o.value === value)?.label ??
-                value
-            );
+            return resolveLabels([message.body.content], message, messages)[0];
         }
 
         if (message.body.type === "options") {
-            const values = message.body.content;
-            if (!message.replyTo) return values.join(", ");
-
-            const sys = messages.find((m) => m.id === message.replyTo);
-            if (!sys) return values.join(", ");
-
-            let labels: string[] = [];
-            for (const value of values) {
-                const label =
-                    (sys.replyRestriction?.bodyLimits as OptionLimits).options.find((o) => o.value === value)?.label ??
-                    value;
-
-                labels.push(label);
-            }
-
-            return labels.join(", ");
+            return resolveLabels(message.body.content, message, messages).join(", ");
         }
 
         if (message.body.type === "file") {
             return <FilePreview file={message.body.content} />;
+        }
+
+        if (message.body.type === "files") {
+            return <FilesPreview files={message.body.content} />;
         }
 
         return message.body.content as string;
@@ -155,16 +147,18 @@ const FilePreview: FC<{ file: FileMeta }> = ({ file }) => {
         }
     };
 
-    const fileCard = () => (
-        <Flex gap="xs" align="center">
-            <Text className={styles.file_title} fw="bold" onClick={handleDownload}>
-                {file.name}
-            </Text>
-            <Text size="sm" c="dimmed">{`${formatBytes(file.size)}`}</Text>
-        </Flex>
-    );
+    const FileCard = () => {
+        return (
+            <Flex gap="xs" align="center">
+                <Text className={styles.file_title} fw="bold" onClick={handleDownload}>
+                    {file.name}
+                </Text>
+                <Text size="sm" c="dimmed">{`${formatBytes(file.size)}`}</Text>
+            </Flex>
+        );
+    };
 
-    if (error) return fileCard();
+    if (error) return FileCard();
 
     return (
         <>
@@ -196,7 +190,17 @@ const FilePreview: FC<{ file: FileMeta }> = ({ file }) => {
                 </audio>
             )}
 
-            {category === "other" && fileCard()}
+            {category === "other" && FileCard()}
         </>
+    );
+};
+
+const FilesPreview: FC<{ files: FileMeta[] }> = ({ files }) => {
+    return (
+        <Flex direction="column" gap="xs">
+            {files.map((file) => (
+                <FilePreview key={file.id} file={file} />
+            ))}
+        </Flex>
     );
 };
