@@ -1,12 +1,14 @@
-import { Button, Flex, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
+import { Button, FileInput, Flex, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
 import { useState, type FC } from "react";
 import { useMessageStore, type CurrentReply } from "../store/messages";
-import type { Chat, DatetimeLimits, NumberLimits, OptionLimits, OptionsLimits } from "../api/types";
+import type { Chat, DatetimeLimits, FileLimits, NumberLimits, OptionLimits, OptionsLimits } from "../api/types";
 import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
 import { Spotlight, spotlight } from "@mantine/spotlight";
 import { errNotify, warnNotify } from "../utils/notifications";
 import { DateTimePicker } from "@mantine/dates";
+import { api } from "../api/api";
+import { formatBytes } from "../utils/number";
 
 export const InputArea = () => {
     const currentReply = useMessageStore((s) => s.currentReply);
@@ -33,6 +35,9 @@ export const InputArea = () => {
                 )}
                 {currentReply?.restriction?.bodyType === "options" && (
                     <OptionsForm currentReply={currentReply} chat={activeChat!} />
+                )}
+                {currentReply?.restriction?.bodyType === "file" && (
+                    <FileForm currentReply={currentReply} chat={activeChat!} />
                 )}
             </Paper>
         </Flex>
@@ -329,6 +334,54 @@ const OptionsForm: FC<FormProps> = ({ chat, currentReply }) => {
                 loading={loading}
                 variant="transparent"
                 onClick={() => sendOption(value)}
+            >
+                OK
+            </Button>
+        </Flex>
+    );
+};
+
+const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState<File | null>(null);
+    const sendMessage = useMessageStore((s) => s.sendMessage);
+
+    const sendFile = async (file: File) => {
+        setLoading(true);
+        try {
+            const maxSize = (currentReply.restriction?.bodyLimits as FileLimits)?.maxSize;
+            if (maxSize && file.size > maxSize) {
+                warnNotify(`The file is too large. The maximum allowed size is ${formatBytes(maxSize)}.`);
+                return;
+            }
+
+            const content = await api.uploadFile(file);
+            await sendMessage({ body: { type: "file", content }, chatID: chat.id, replyTo: currentReply.to });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Flex gap={8} w="100%" align="center" justify="center">
+            <FileInput
+                miw={200}
+                maw={500}
+                accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
+                clearable
+                value={value}
+                onChange={setValue}
+                placeholder="Pick a file"
+            />
+
+            <Button
+                size="sm"
+                disabled={!value}
+                loading={loading}
+                variant="transparent"
+                onClick={() => sendFile(value!)}
             >
                 OK
             </Button>

@@ -60,6 +60,11 @@ class API {
         return this.makeRequest<Chat>(url, jsonRequestParams("DELETE", {}));
     }
 
+    getFileURL(id: string) {
+        const url = this.endpoint("file") + queryParams({ id });
+        return url;
+    }
+
     async downloadFile(id: string) {
         const url = this.endpoint("file") + queryParams({ id });
         const res = await fetch(url);
@@ -82,9 +87,11 @@ class API {
 
     async uploadFile(file: File) {
         const url = this.endpoint("file");
+        const filename = file.name;
+
         const res = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": file.type },
+            headers: { "Content-Type": file.type, "X-Filename": filename },
             body: file,
         });
 
