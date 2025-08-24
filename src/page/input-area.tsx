@@ -67,7 +67,7 @@ const CommandPicker: FC<{ chat: Chat | null }> = ({ chat }) => {
 
     return (
         <Flex w="100%" justify="center">
-            <Button onClick={spotlight.open}>Choose command</Button>
+            <Button onClick={spotlight.open}>Pick command</Button>
             <Spotlight
                 centered
                 actions={commands.map((cmd) => ({

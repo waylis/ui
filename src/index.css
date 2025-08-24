@@ -1,11 +1,20 @@
 * {
-    font-family: "Courier New", Courier, monospace;
+    font-family: "Inter", sans-serif;
 }
 
 body {
     overflow: hidden;
 }
 
+:root[data-mantine-color-scheme="dark"] {
+    --mantine-color-body: #212121 !important;
+}
+
 .mantine-Modal-inner {
     padding-inline: 0.5rem;
+}
+
+.mantine-Code-root {
+    border-radius: 0;
+    background-color: transparent;
 }

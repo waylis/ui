@@ -10,11 +10,13 @@ import type { Message } from "../api/types";
 import { errNotify } from "../utils/notifications";
 import { useEventSourceStore } from "../store/events";
 import { delay } from "../utils/async";
+import { useInfoStore } from "../store/info";
 
 export const Page = () => {
     const [loading, setLoading] = useState(false);
     const fetchChats = useChatStore((s) => s.fetchChats);
     const activeChat = useChatStore((s) => s.activeChat);
+    const fetchInfo = useInfoStore((s) => s.fetchInfo);
     const fetchMessages = useMessageStore((s) => s.fetchMessages);
     const fetchCommands = useCommandStore((s) => s.fetchCommands);
     const addEventHandler = useEventSourceStore((s) => s.addEventHandler);
@@ -37,7 +39,7 @@ export const Page = () => {
         setLoading(true);
         try {
             const activeChatID = new URLSearchParams(location.search).get("chat") ?? "";
-            await Promise.all([fetchCommands(), fetchChats(activeChatID)]);
+            await Promise.all([fetchCommands(), fetchChats(activeChatID), fetchInfo()]);
         } catch (error) {
             errNotify(error);
         } finally {
@@ -50,14 +52,14 @@ export const Page = () => {
 
         addEventHandler("newSystemMessage", async (e) => {
             const message = JSON.parse(e.data) as Message;
-            await delay(500); // Need to prevent instant repsponse
+            await delay(500); // Need to prevent instant repsponses
             appendMessage(message);
             setCurrentReply(message);
         });
     }, []);
 
     useEffect(() => {
-        prepareMessages();
+        prepareMessages(); // load messages every time when active chat is changed
     }, [activeChat]);
 
     return (

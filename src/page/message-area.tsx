@@ -1,4 +1,4 @@
-import { Flex, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
+import { Code, Flex, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
 import { useEffect, useRef, useState, type FC } from "react";
 import type { Command, FileMeta, Message, OptionLimits } from "../api/types";
 import { useMessageStore } from "../store/messages";
@@ -9,6 +9,10 @@ import { getMimeCategory } from "../utils/mime";
 import { formatBytes } from "../utils/number";
 import styles from "./message-area.module.css";
 import { warnNotify } from "../utils/notifications";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { CustomCopyButton } from "../components/custom-copy-button";
+import { useInfoStore } from "../store/info";
 
 export const MessageArea = () => {
     const isFirstRender = useRef(true);
@@ -55,14 +59,17 @@ export const MessageArea = () => {
 
 const WelcomeLabel = () => {
     const bgColor = useLighterSchemeColor();
+    const info = useInfoStore((s) => s.info);
 
     return (
         <Flex justify="center" align="center">
-            <Paper bg={bgColor} radius="md" p="xl" ta="center">
-                <Text fw="bolder" c="dimmed">
+            <Paper bg={bgColor} radius="md" p="md" maw={500}>
+                <Text fw="bolder" ta="center" c="dimmed">
                     Welcome
                 </Text>
-                <Text c="dimmed">To start choose a command</Text>
+                <Text mt="sm" lh={1.3} c="dimmed" ta="justify">
+                    {info.description}
+                </Text>
             </Paper>
         </Flex>
     );
@@ -116,12 +123,16 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
             return <FilesPreview files={message.body.content} />;
         }
 
+        if (message.body.type === "markdown") {
+            return <MarkdownPreview body={message.body.content} />;
+        }
+
         return message.body.content as string;
     };
 
     return (
         <Paper bg={isUser ? bgColor : undefined} p="sm" my="xs" radius="md">
-            {message.body.type.includes("file") ? (
+            {["file", "files", "markdown"].includes(message.body.type) ? (
                 content()
             ) : (
                 <Text c={isCommand ? primaryColor : undefined}>{content()}</Text>
@@ -202,5 +213,37 @@ const FilesPreview: FC<{ files: FileMeta[] }> = ({ files }) => {
                 <FilePreview key={file.id} file={file} />
             ))}
         </Flex>
+    );
+};
+
+const MarkdownPreview: FC<{ body: string }> = ({ body }) => {
+    return (
+        <Markdown
+            components={{
+                code: (props) => {
+                    const { children } = props;
+                    const code = children?.toString() || "";
+                    const lines = code.split("\n").length - 1;
+                    const symbols = code.length;
+                    return (
+                        <>
+                            <Code block>{children}</Code>
+                            <Flex justify="flex-end" gap="sm" align="center">
+                                <Text lh={0} p={0} size="xs" opacity={0.7}>
+                                    {`lines: ${lines}`}
+                                </Text>
+                                <Text lh={0} p={0} size="xs" opacity={0.7}>
+                                    {`symbols: ${symbols}`}
+                                </Text>
+                                <CustomCopyButton value={children?.toString() || ""} />
+                            </Flex>
+                        </>
+                    );
+                },
+            }}
+            remarkPlugins={[remarkGfm]}
+        >
+            {body}
+        </Markdown>
     );
 };

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "../api/api";
+import { errNotify } from "../utils/notifications";
 
 type EventHandler = (event: MessageEvent) => void;
 
@@ -19,7 +20,7 @@ export const useEventSourceStore = create<EventSourceStore>((set, get) => ({
             eventSource = new EventSource(api.endpoint("events"));
 
             eventSource.onerror = () => {
-                console.error("EventSource connection error");
+                errNotify("Event source connection error. Try reload a page.");
             };
 
             set({ eventSource });
