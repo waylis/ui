@@ -1,17 +1,43 @@
-import { Button, Flex, Text } from "@mantine/core";
+import { ActionIcon, Flex, Menu, Text } from "@mantine/core";
 import { ChatList } from "./chat-list";
 import { useInfoStore } from "../store/info";
+import { IconDots } from "../icons";
+import { modals } from "@mantine/modals";
 
 export const Header = () => {
-    const info = useInfoStore((s) => s.info);
+  const info = useInfoStore((s) => s.info);
 
-    return (
-        <Flex w="100%" p={4} justify="space-between" align="center">
-            <ChatList />
-            <Text size="md" lh={0} fw={700}>
-                {info.name}
-            </Text>
-            <Button variant="transparent">&#x2022;&#x2022;&#x2022;</Button>
-        </Flex>
-    );
+  return (
+    <Flex w="100%" p={4} px="xs" justify="space-between" align="center">
+      <ChatList />
+      <Text size="md" lh={0} fw={700}>
+        {info.name}
+      </Text>
+      <HeaderMenu />
+    </Flex>
+  );
+};
+
+const HeaderMenu = () => {
+  const openSettingsModal = () =>
+    modals.openContextModal({
+      modal: "settings",
+      title: "App settings",
+      size: "lg",
+      innerProps: undefined,
+    });
+
+  return (
+    <Menu width={200}>
+      <Menu.Target>
+        <ActionIcon color="default" variant="transparent">
+          <IconDots />
+        </ActionIcon>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <Menu.Item onClick={openSettingsModal}>Settings</Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
+  );
 };

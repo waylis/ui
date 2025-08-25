@@ -8,14 +8,21 @@ import { MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
 import { Page } from "./page/page";
+import { SettingsModal } from "./page/settings";
+import { useSettingsStore } from "./store/settings";
 
 export default function App() {
-    return (
-        <MantineProvider defaultColorScheme="dark" theme={{ primaryColor: "green" }}>
-            <ModalsProvider modalProps={{ centered: true, m: 0 }}>
-                <Notifications position="top-center" />
-                <Page />
-            </ModalsProvider>
-        </MantineProvider>
-    );
+  const primaryColor = useSettingsStore((s) => s.primaryColor);
+
+  return (
+    <MantineProvider defaultColorScheme="dark" theme={{ primaryColor }}>
+      <ModalsProvider
+        modalProps={{ centered: true, m: 0 }}
+        modals={{ settings: SettingsModal }}
+      >
+        <Notifications position="top-center" />
+        <Page />
+      </ModalsProvider>
+    </MantineProvider>
+  );
 }
