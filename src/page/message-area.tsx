@@ -39,13 +39,16 @@ export const MessageArea = () => {
             {messages.length > 0 && (
                 <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
                     <Flex direction="column" maw={765} m="0 auto">
-                        {messages.map((m) => (
+                        {messages.map((message, index) => (
                             <ChatMessage
-                                key={m.id}
-                                message={m}
+                                key={message.id}
+                                message={message}
                                 messages={messages}
                                 commands={commands}
                                 primaryColor={theme.primaryColor}
+                                withoutTime={
+                                    message.senderID === "system" && messages[index + 1]?.senderID === "system"
+                                }
                             />
                         ))}
                     </Flex>
@@ -80,6 +83,7 @@ interface ChatMessageProps {
     messages: Message[];
     commands: Command[];
     primaryColor: string;
+    withoutTime?: boolean;
 }
 
 function resolveLabels(values: string[], message: Message, messages: Message[]): string[] {
@@ -92,7 +96,7 @@ function resolveLabels(values: string[], message: Message, messages: Message[]):
     return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
 }
 
-const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor }) => {
+const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor, withoutTime }) => {
     const isUser = message.senderID !== "system";
     const bgColor = useLighterSchemeColor();
     const isCommand = message.body.type === "command";
@@ -137,10 +141,15 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
             ) : (
                 <Text c={isCommand ? primaryColor : undefined}>{content()}</Text>
             )}
-            <Space h={8} />
-            <Text c="dimmed" size="xs" ta="right">
-                {new Date(message.createdAt).toLocaleString()}
-            </Text>
+
+            {!withoutTime && (
+                <>
+                    <Space h={8} />
+                    <Text c="dimmed" size="xs" ta="right">
+                        {new Date(message.createdAt).toLocaleString()}
+                    </Text>
+                </>
+            )}
         </Paper>
     );
 };
