@@ -111,6 +111,10 @@ class API {
         if (needsAuth) await this.auth(userID);
         if (resp.status === 401) resp = await fetch(url, params); // Retry
 
+        if (resp.status === 500) {
+            throw new Error("The server is unavailable. Please try again later.");
+        }
+
         if (!resp.ok) {
             const body: { message: string } = await resp.json();
             throw new Error(body.message);
