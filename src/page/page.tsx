@@ -41,11 +41,13 @@ export const Page = () => {
             await Promise.all([fetchInfo(), fetchCommands()]);
             await fetchChats();
 
-            addEventHandler("newSystemMessage", async (e) => {
-                const message = JSON.parse(e.data) as Message;
-                await delay(500); // Need to prevent instant repsponses
-                appendMessage(message);
-                setCurrentReply(message);
+            addEventHandler("newSystemResponse", async (e) => {
+                const messages = JSON.parse(e.data) as Message[];
+                for (const message of messages) {
+                    await delay(500); // Need to prevent instant repsponses
+                    appendMessage(message);
+                    setCurrentReply(message);
+                }
             });
         } catch (error) {
             errNotify(error);
