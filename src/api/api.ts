@@ -1,3 +1,4 @@
+import { getQueryParam, setQueryParam } from "../utils/url";
 import type { AppInfo, Chat, Command, CreateUserMessageParams, FileMeta, Message } from "./types";
 import { getFileNameFromContentDisposition, jsonRequestParams, queryParams } from "./utils";
 
@@ -20,8 +21,10 @@ class API {
         return `${this.url.replace(/\/+$/g, "")}${p}`;
     }
 
-    async auth() {
-        const url = this.endpoint("auth");
+    async auth(userID: string | null) {
+        const url = this.endpoint("auth") + queryParams({ id: userID });
+        if (userID) setQueryParam("user_id", null);
+
         return this.makeRequest(url, { method: "POST" });
     }
 
@@ -102,10 +105,11 @@ class API {
     private async makeRequest<T>(url: string, params: RequestInit = {}): Promise<T> {
         let resp = await fetch(url, params);
 
-        if (resp.status === 401) {
-            await this.auth();
-            resp = await fetch(url, params);
-        }
+        const userID = getQueryParam("user_id");
+        const needsAuth = !!userID || resp.status === 401;
+
+        if (needsAuth) await this.auth(userID);
+        if (resp.status === 401) resp = await fetch(url, params); // Retry
 
         if (!resp.ok) {
             const body: { message: string } = await resp.json();

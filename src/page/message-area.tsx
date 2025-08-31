@@ -38,6 +38,7 @@ export const MessageArea = () => {
         <Flex flex={1} justify="center" style={{ overflowY: "auto" }}>
             {messages.length > 0 && (
                 <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
+                    <Space h={4}/>
                     <Flex direction="column" maw={765} m="0 auto">
                         {messages.map((message, index) => (
                             <ChatMessage

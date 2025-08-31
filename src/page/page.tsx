@@ -38,8 +38,15 @@ export const Page = () => {
     const loadResources = async () => {
         setLoading(true);
         try {
-            const activeChatID = new URLSearchParams(location.search).get("chat") ?? "";
-            await Promise.all([fetchCommands(), fetchChats(activeChatID), fetchInfo()]);
+            await Promise.all([fetchInfo(), fetchCommands()]);
+            await fetchChats();
+
+            addEventHandler("newSystemMessage", async (e) => {
+                const message = JSON.parse(e.data) as Message;
+                await delay(500); // Need to prevent instant repsponses
+                appendMessage(message);
+                setCurrentReply(message);
+            });
         } catch (error) {
             errNotify(error);
         } finally {
@@ -49,13 +56,6 @@ export const Page = () => {
 
     useEffect(() => {
         loadResources();
-
-        addEventHandler("newSystemMessage", async (e) => {
-            const message = JSON.parse(e.data) as Message;
-            await delay(500); // Need to prevent instant repsponses
-            appendMessage(message);
-            setCurrentReply(message);
-        });
     }, []);
 
     useEffect(() => {

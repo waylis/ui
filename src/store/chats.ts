@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Chat } from "../api/types";
 import { api } from "../api/api";
+import { getQueryParam, setQueryParam } from "../utils/url";
 
 interface ChatStore {
     chats: Chat[];
@@ -10,7 +11,7 @@ interface ChatStore {
     limit: number;
     endReached: boolean;
 
-    fetchChats(activeChatID?: string): Promise<Chat[]>;
+    fetchChats(): Promise<Chat[]>;
     setActiveChat(chat: Chat | null): void;
     createChat(name?: string): Promise<Chat>;
     deleteChat(id: string): Promise<Chat>;
@@ -24,11 +25,14 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     limit: 20,
     endReached: false,
 
-    async fetchChats(activeChatID?: string) {
+    async fetchChats() {
         const chats = await api.getChats(get().page, get().limit);
 
         if (chats.length && !get().activeChat) {
+            const activeChatID = getQueryParam("chat") ?? "";
             const activeChat = chats.find((c) => c.id === activeChatID) || chats[0];
+
+            setQueryParam("chat", activeChat.id);
             set({ chats, activeChat });
         } else {
             set({ chats });
@@ -38,10 +42,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     },
 
     setActiveChat(chat: Chat | null) {
-        const url = new URL(window.location.href);
-        chat ? url.searchParams.set("chat", chat.id) : url.searchParams.delete("chat");
-        window.history.replaceState({}, "", url);
-
+        setQueryParam("chat", chat?.id ?? null);
         set({ activeChat: chat });
     },
 
