@@ -14,6 +14,8 @@ export const errNotify = (err: string | unknown) => {
         autoClose: 20_000,
         color: "red",
     });
+
+    console.error(message);
 };
 
 export const okNotify = (message: string) => {
@@ -32,6 +34,8 @@ export const infoNotify = (message: string) => {
         withCloseButton: true,
         color: "blue",
     });
+
+    console.info(message);
 };
 
 export const warnNotify = (message: string) => {
@@ -40,5 +44,8 @@ export const warnNotify = (message: string) => {
         withBorder: true,
         withCloseButton: true,
         color: "yellow",
+        autoClose: 9000,
     });
+
+    console.warn(message);
 };
