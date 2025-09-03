@@ -1,5 +1,5 @@
-import { Button, FileInput, Flex, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
-import { useState, type FC } from "react";
+import { Button, FileInput, Flex, Loader, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
+import { useEffect, useRef, useState, type FC } from "react";
 import { useMessageStore, type CurrentReply } from "../store/messages";
 import type {
     Chat,
@@ -18,37 +18,74 @@ import { DateTimePicker } from "@mantine/dates";
 import { api } from "../api/api";
 import { formatBytes } from "../utils/number";
 
+const MAX_RESPONSE_WAIT_TIME_MS = 5000;
+
 export const InputArea = () => {
+    const [isBlocked, setIsBlocked] = useState(false);
+    const unblockTimeout = useRef(0);
     const currentReply = useMessageStore((s) => s.currentReply);
+    const messages = useMessageStore((s) => s.messages);
     const activeChat = useChatStore((s) => s.activeChat);
+
+    const handleUnblockInput = () => {
+        clearTimeout(unblockTimeout.current);
+        setIsBlocked(false);
+    };
+
+    useEffect(() => {
+        const latest = messages.at(-1);
+        if (!latest) return;
+
+        if (latest.senderID === "system") {
+            setIsBlocked(false);
+        }
+
+        if (latest.senderID !== "system") {
+            const timeDiff = Date.now() - new Date(latest.createdAt).getTime();
+            if (timeDiff > MAX_RESPONSE_WAIT_TIME_MS) return;
+
+            setIsBlocked(true);
+            unblockTimeout.current = setTimeout(handleUnblockInput, Math.max(MAX_RESPONSE_WAIT_TIME_MS - timeDiff, 0));
+        }
+
+        return handleUnblockInput;
+    }, [messages]);
 
     return (
         <Flex w="100%" justify="center" pb="xs">
             <Paper w="100%" maw={765} p="sm" mih={100} radius="md" style={{ display: "flex", alignItems: "center" }}>
-                {!currentReply?.restriction && <CommandPicker chat={activeChat} />}
-                {currentReply?.restriction?.bodyType === "text" && (
-                    <TextForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "number" && (
-                    <NumberForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "boolean" && (
-                    <BooleanForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "datetime" && (
-                    <DatetimeForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "option" && (
-                    <OptionForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "options" && (
-                    <OptionsForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "file" && (
-                    <FileForm currentReply={currentReply} chat={activeChat!} />
-                )}
-                {currentReply?.restriction?.bodyType === "files" && (
-                    <FilesForm currentReply={currentReply} chat={activeChat!} />
+                {isBlocked ? (
+                    <Flex flex={1} justify="center" align="center">
+                        <Loader variant="dots" type="dots" />
+                    </Flex>
+                ) : (
+                    <>
+                        {!currentReply?.restriction && <CommandPicker chat={activeChat} />}
+                        {currentReply?.restriction?.bodyType === "text" && (
+                            <TextForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "number" && (
+                            <NumberForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "boolean" && (
+                            <BooleanForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "datetime" && (
+                            <DatetimeForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "option" && (
+                            <OptionForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "options" && (
+                            <OptionsForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "file" && (
+                            <FileForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                        {currentReply?.restriction?.bodyType === "files" && (
+                            <FilesForm currentReply={currentReply} chat={activeChat!} />
+                        )}
+                    </>
                 )}
             </Paper>
         </Flex>
