@@ -38,20 +38,27 @@ export const MessageArea = () => {
         <Flex flex={1} justify="center" style={{ overflowY: "auto" }}>
             {messages.length > 0 && (
                 <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
-                    <Space h={4}/>
+                    <Space h={4} />
                     <Flex direction="column" maw={765} m="0 auto">
-                        {messages.map((message, index) => (
-                            <ChatMessage
-                                key={message.id}
-                                message={message}
-                                messages={messages}
-                                commands={commands}
-                                primaryColor={theme.primaryColor}
-                                withoutTime={
-                                    message.senderID === "system" && messages[index + 1]?.senderID === "system"
-                                }
-                            />
-                        ))}
+                        {messages.map((message, index) => {
+                            const nextMessage = messages[index + 1];
+                            const isNextSystem = message.senderID === "system" && nextMessage?.senderID === "system";
+                            const isNextNoTimeDiff =
+                                nextMessage &&
+                                new Date(nextMessage.createdAt).getTime() - new Date(message.createdAt).getTime() <
+                                    1000;
+
+                            return (
+                                <ChatMessage
+                                    key={message.id}
+                                    message={message}
+                                    messages={messages}
+                                    commands={commands}
+                                    primaryColor={theme.primaryColor}
+                                    withoutTime={isNextSystem && isNextNoTimeDiff}
+                                />
+                            );
+                        })}
                     </Flex>
                 </ScrollArea>
             )}
