@@ -33,8 +33,11 @@ export const ChatList = () => {
     const theme = useMantineTheme();
 
     const handleActiveChat = (chat: Chat) => {
-        setActiveChat(chat);
         close();
+        if (chat.id === activeChat?.id) return;
+
+        resetMessages();
+        setActiveChat(chat);
     };
 
     const handleCreateChat = () =>

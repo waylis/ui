@@ -12,13 +12,14 @@ interface MessageStore {
     currentReply: CurrentReply | null;
 
     page: number;
-    limit: number;
-    endReached: boolean;
+    limit?: number;
+    lastMessageAt?: string;
 
     fetchMessages(chatID: string): Promise<Message[]>;
     sendMessage(params: CreateUserMessageParams): Promise<Message>;
     appendMessage(msg: Message): void;
     setCurrentReply(message: Message): void;
+    setPage(page: number): void;
     resetMessages(): void;
 }
 
@@ -27,28 +28,34 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     currentReply: null,
 
     page: 1,
-    limit: 20,
     endReached: false,
 
     async fetchMessages(chatID: string) {
-        const messages = await api.getMessages(chatID, get().page, get().limit);
-        const lastSystemMessage = messages.find((m) => m.senderID === "system");
-        const currentReply = lastSystemMessage
-            ? { to: lastSystemMessage.id, restriction: lastSystemMessage.replyRestriction }
-            : null;
+        const page = get().page;
+        const messages = await api.getMessages(chatID, page);
 
-        set({ messages: messages.reverse(), currentReply });
+        if (page === 1) {
+            const lastSystemMessage = messages.find((m) => m.senderID === "system");
+            const currentReply = lastSystemMessage
+                ? { to: lastSystemMessage.id, restriction: lastSystemMessage.replyRestriction }
+                : null;
+
+            set({ messages: messages.reverse(), currentReply, lastMessageAt: messages.at(-1)?.createdAt });
+        } else {
+            set({ messages: [...messages.reverse(), ...get().messages] });
+        }
+
         return messages;
     },
 
     async sendMessage(params: CreateUserMessageParams) {
         const message = await api.sendMessage(params);
-        set({ messages: [...get().messages, message] });
+        set({ messages: [...get().messages, message], lastMessageAt: message.createdAt });
         return message;
     },
 
     appendMessage(message: Message) {
-        set({ messages: [...get().messages, message] });
+        set({ messages: [...get().messages, message], lastMessageAt: message.createdAt });
     },
 
     setCurrentReply(message: Message) {
@@ -60,7 +67,11 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
         });
     },
 
+    setPage(page: number) {
+        set({ page });
+    },
+
     resetMessages() {
-        set({ messages: [], page: 1, currentReply: null, endReached: false });
+        set({ messages: [], page: 1, currentReply: null });
     },
 }));

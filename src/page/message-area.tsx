@@ -1,5 +1,5 @@
-import { Code, Flex, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
-import { useEffect, useRef, useState, type FC } from "react";
+import { Button, Code, Flex, Group, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
+import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import type { Command, FileMeta, Message, OptionLimits } from "../api/types";
 import { useMessageStore } from "../store/messages";
 import { useLighterSchemeColor } from "../hooks/useColors";
@@ -8,16 +8,18 @@ import { api } from "../api/api";
 import { getMimeCategory } from "../utils/mime";
 import { formatBytes } from "../utils/number";
 import styles from "./message-area.module.css";
-import { warnNotify } from "../utils/notifications";
+import { errNotify, warnNotify } from "../utils/notifications";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CustomCopyButton } from "../components/custom-copy-button";
 import { useInfoStore } from "../store/info";
+import { useChatStore } from "../store/chats";
 
 export const MessageArea = () => {
     const isFirstRender = useRef(true);
     const viewport = useRef<HTMLDivElement | null>(null);
     const messages = useMessageStore((s) => s.messages);
+    const lastMessageAt = useMessageStore((s) => s.lastMessageAt);
     const commands = useCommandStore((s) => s.commands);
     const theme = useMantineTheme();
 
@@ -32,14 +34,16 @@ export const MessageArea = () => {
         }
 
         if (viewport.current) scrollToBottom();
-    }, [messages]);
+    }, [lastMessageAt]);
 
     return (
         <Flex flex={1} justify="center" style={{ overflowY: "auto" }}>
             {messages.length > 0 && (
                 <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
                     <Space h={4} />
+
                     <Flex direction="column" maw={765} m="0 auto">
+                        <LoadMoreButton viewport={viewport} />
                         {messages.map((message, index) => {
                             const nextMessage = messages[index + 1];
                             const isNextSystem = message.senderID === "system" && nextMessage?.senderID === "system";
@@ -65,6 +69,41 @@ export const MessageArea = () => {
 
             {messages.length === 0 && <WelcomeLabel />}
         </Flex>
+    );
+};
+
+const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ viewport }) => {
+    const [isAllMessages, setIsAllMessages] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const page = useMessageStore((s) => s.page);
+    const setPage = useMessageStore((s) => s.setPage);
+    const fetchMessages = useMessageStore((s) => s.fetchMessages);
+    const activeChat = useChatStore((s) => s.activeChat);
+
+    const handleClick = async () => {
+        if (!activeChat) return;
+        setLoading(true);
+        const prev = viewport.current!.scrollHeight;
+
+        try {
+            setPage(page + 1);
+            const msgs = await fetchMessages(activeChat.id);
+            if (msgs.length === 0) setIsAllMessages(true);
+
+            viewport.current!.scrollTo({ top: viewport.current!.scrollHeight - prev });
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Group display={isAllMessages ? "none" : undefined} py="xs" justify="center">
+            <Button onClick={handleClick} loading={loading} size="xs" variant="transparent">
+                Load more
+            </Button>
+        </Group>
     );
 };
 
