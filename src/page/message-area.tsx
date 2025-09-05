@@ -19,7 +19,7 @@ export const MessageArea = () => {
     const isFirstRender = useRef(true);
     const viewport = useRef<HTMLDivElement | null>(null);
     const messages = useMessageStore((s) => s.messages);
-    const lastMessageAt = useMessageStore((s) => s.lastMessageAt);
+    const lastMessageID = useMessageStore((s) => s.lastMessageID);
     const commands = useCommandStore((s) => s.commands);
     const theme = useMantineTheme();
 
@@ -34,7 +34,7 @@ export const MessageArea = () => {
         }
 
         if (viewport.current) scrollToBottom();
-    }, [lastMessageAt]);
+    }, [lastMessageID]);
 
     return (
         <Flex flex={1} justify="center" style={{ overflowY: "auto" }}>

@@ -13,7 +13,7 @@ interface MessageStore {
 
     page: number;
     limit?: number;
-    lastMessageAt?: string;
+    lastMessageID?: string;
 
     fetchMessages(chatID: string): Promise<Message[]>;
     sendMessage(params: CreateUserMessageParams): Promise<Message>;
@@ -40,7 +40,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
                 ? { to: lastSystemMessage.id, restriction: lastSystemMessage.replyRestriction }
                 : null;
 
-            set({ messages: messages.reverse(), currentReply, lastMessageAt: messages.at(-1)?.createdAt });
+            set({ messages: messages.reverse(), currentReply, lastMessageID: messages.at(-1)?.id });
         } else {
             set({ messages: [...messages.reverse(), ...get().messages] });
         }
@@ -50,12 +50,12 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
 
     async sendMessage(params: CreateUserMessageParams) {
         const message = await api.sendMessage(params);
-        set({ messages: [...get().messages, message], lastMessageAt: message.createdAt });
+        set({ messages: [...get().messages, message], lastMessageID: message.id });
         return message;
     },
 
     appendMessage(message: Message) {
-        set({ messages: [...get().messages, message], lastMessageAt: message.createdAt });
+        set({ messages: [...get().messages, message], lastMessageID: message.id });
     },
 
     setCurrentReply(message: Message) {
