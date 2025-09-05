@@ -108,9 +108,10 @@ const CommandPicker: FC<{ chat: Chat | null; hidden: boolean }> = ({ chat, hidde
             <Button onClick={spotlight.open}>Pick command</Button>
             <Spotlight
                 centered
+                scrollable
                 actions={commands.map((cmd) => ({
                     id: cmd.value,
-                    label: cmd.label,
+                    label: cmd.label || cmd.value,
                     description: cmd.description,
                     onClick: () => sendCommand(cmd.value),
                 }))}
