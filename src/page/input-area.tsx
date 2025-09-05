@@ -60,7 +60,8 @@ export const InputArea = () => {
                     </Flex>
                 ) : (
                     <>
-                        {!currentReply?.restriction && <CommandPicker chat={activeChat} />}
+                        <CommandPicker hidden={!!currentReply?.restriction} chat={activeChat} />
+
                         {currentReply?.restriction?.bodyType === "text" && (
                             <TextForm currentReply={currentReply} chat={activeChat!} />
                         )}
@@ -92,7 +93,7 @@ export const InputArea = () => {
     );
 };
 
-const CommandPicker: FC<{ chat: Chat | null }> = ({ chat }) => {
+const CommandPicker: FC<{ chat: Chat | null; hidden: boolean }> = ({ chat, hidden }) => {
     const commands = useCommandStore((s) => s.commands);
     const sendMessage = useMessageStore((s) => s.sendMessage);
     const createChat = useChatStore((s) => s.createChat);
@@ -103,7 +104,7 @@ const CommandPicker: FC<{ chat: Chat | null }> = ({ chat }) => {
     };
 
     return (
-        <Flex w="100%" justify="center">
+        <Flex display={hidden ? "none" : undefined} w="100%" justify="center">
             <Button onClick={spotlight.open}>Pick command</Button>
             <Spotlight
                 centered
