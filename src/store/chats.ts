@@ -6,44 +6,39 @@ import { getQueryParam, setQueryParam } from "../utils/url";
 interface ChatStore {
     chats: Chat[];
     activeChat: Chat | null;
-
-    page: number;
     limit: number;
     endReached: boolean;
 
     fetchChats(): Promise<Chat[]>;
-    setActiveChat(chat: Chat | null): void;
     createChat(name?: string): Promise<Chat>;
     deleteChat(id: string): Promise<Chat>;
+
+    setActiveChat(chat: Chat | null): void;
 }
 
 export const useChatStore = create<ChatStore>()((set, get) => ({
     chats: [],
     activeChat: null,
-
-    page: 1,
     limit: 20,
     endReached: false,
 
     async fetchChats() {
-        const chats = await api.getChats(get().page, get().limit);
+        const offset = get().chats.length;
+        const limit = get().limit;
+        const chats = await api.getChats(offset, limit);
+        const endReached = chats.length < limit;
 
         if (chats.length && !get().activeChat) {
-            const activeChatID = getQueryParam("chat") ?? "";
+            const activeChatID = getQueryParam("chat_id") ?? "";
             const activeChat = chats.find((c) => c.id === activeChatID) || chats[0];
 
-            setQueryParam("chat", activeChat.id);
-            set({ chats, activeChat });
+            setQueryParam("chat_id", activeChat.id);
+            set({ chats: [...get().chats, ...chats], activeChat, endReached });
         } else {
-            set({ chats });
+            set({ chats: [...get().chats, ...chats], endReached });
         }
 
         return chats;
-    },
-
-    setActiveChat(chat: Chat | null) {
-        setQueryParam("chat", chat?.id ?? null);
-        set({ activeChat: chat });
     },
 
     async createChat(name?: string) {
@@ -70,5 +65,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }
 
         return deleted;
+    },
+
+    setActiveChat(chat: Chat | null) {
+        setQueryParam("chat_id", chat?.id ?? null);
+        set({ activeChat: chat });
     },
 }));

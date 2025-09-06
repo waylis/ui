@@ -43,8 +43,8 @@ class API {
         return this.makeRequest<Message>(url, jsonRequestParams("POST", params));
     }
 
-    async getChats(page?: number, limit?: number) {
-        const url = this.endpoint("chats") + queryParams({ page, limit });
+    async getChats(offset?: number, limit?: number) {
+        const url = this.endpoint("chats") + queryParams({ offset, limit });
         return this.makeRequest<Chat[]>(url);
     }
 
@@ -53,8 +53,8 @@ class API {
         return this.makeRequest<Chat>(url, jsonRequestParams("POST", { name }));
     }
 
-    async getMessages(chat_id: string, page?: number, limit?: number) {
-        const url = this.endpoint("messages") + queryParams({ chat_id, page, limit });
+    async getMessages(chat_id: string, offset?: number, limit?: number) {
+        const url = this.endpoint("messages") + queryParams({ chat_id, offset, limit });
         return this.makeRequest<Message[]>(url);
     }
 

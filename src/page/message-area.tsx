@@ -73,12 +73,10 @@ export const MessageArea = () => {
 };
 
 const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ viewport }) => {
-    const [isAllMessages, setIsAllMessages] = useState(false);
     const [loading, setLoading] = useState(false);
-    const page = useMessageStore((s) => s.page);
-    const setPage = useMessageStore((s) => s.setPage);
     const fetchMessages = useMessageStore((s) => s.fetchMessages);
     const activeChat = useChatStore((s) => s.activeChat);
+    const endReached = useMessageStore((s) => s.endReached);
 
     const handleClick = async () => {
         if (!activeChat) return;
@@ -86,10 +84,7 @@ const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ vi
         const prev = viewport.current!.scrollHeight;
 
         try {
-            setPage(page + 1);
-            const msgs = await fetchMessages(activeChat.id);
-            if (msgs.length === 0) setIsAllMessages(true);
-
+            await fetchMessages(activeChat.id);
             viewport.current!.scrollTo({ top: viewport.current!.scrollHeight - prev });
         } catch (error) {
             errNotify(error);
@@ -99,7 +94,7 @@ const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ vi
     };
 
     return (
-        <Group display={isAllMessages ? "none" : undefined} py="xs" justify="center">
+        <Group display={endReached ? "none" : undefined} py="xs" justify="center">
             <Button onClick={handleClick} loading={loading} size="xs" variant="transparent">
                 Load more
             </Button>

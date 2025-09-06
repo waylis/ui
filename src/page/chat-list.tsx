@@ -26,11 +26,12 @@ import { useMessageStore } from "../store/messages";
 export const ChatList = () => {
     const [opened, { open, close }] = useDisclosure(false);
     const chats = useChatStore((s) => s.chats);
+    const activeChat = useChatStore((s) => s.activeChat);
+    const theme = useMantineTheme();
+
     const deleteChat = useChatStore((s) => s.deleteChat);
     const setActiveChat = useChatStore((s) => s.setActiveChat);
-    const activeChat = useChatStore((s) => s.activeChat);
     const resetMessages = useMessageStore((s) => s.resetMessages);
-    const theme = useMantineTheme();
 
     const handleActiveChat = (chat: Chat) => {
         close();
@@ -77,21 +78,26 @@ export const ChatList = () => {
                     New chat
                 </Button>
                 <Space h={16} />
-                <Flex direction="column" gap="xs">
-                    {chats.map((chat) => (
-                        <Paper key={chat.id} className={styles.item} p={4} onClick={() => handleActiveChat(chat)}>
-                            <Flex align="center" justify="space-between">
-                                <Text c={activeChat?.id === chat.id ? theme.primaryColor : undefined}>{chat.name}</Text>
-                                <Tooltip label="Delete">
-                                    <CloseButton c="dimmed" onClick={(e) => confirmDeleteChat(e, chat.id)} />
-                                </Tooltip>
-                            </Flex>
-                            <Text size="sm" c="dimmed">
-                                {new Date(chat.createdAt).toLocaleString()}
-                            </Text>
-                        </Paper>
-                    ))}
-                </Flex>
+                <ScrollArea scrollHideDelay={300} scrollbarSize={8} w="100%">
+                    <Flex direction="column" gap="xs">
+                        {chats.map((chat) => (
+                            <Paper key={chat.id} className={styles.item} p={4} onClick={() => handleActiveChat(chat)}>
+                                <Flex align="center" justify="space-between">
+                                    <Text c={activeChat?.id === chat.id ? theme.primaryColor : undefined}>
+                                        {chat.name}
+                                    </Text>
+                                    <Tooltip label="Delete">
+                                        <CloseButton c="dimmed" onClick={(e) => confirmDeleteChat(e, chat.id)} />
+                                    </Tooltip>
+                                </Flex>
+                                <Text size="sm" c="dimmed">
+                                    {new Date(chat.createdAt).toLocaleString()}
+                                </Text>
+                            </Paper>
+                        ))}
+                    </Flex>
+                </ScrollArea>
+                <LoadMoreButton />
             </Drawer>
 
             <Burger onClick={open} size="sm" />
@@ -104,12 +110,15 @@ const NewChatModal: FC<{ closeList: () => void }> = ({ closeList }) => {
     const [loading, setLoading] = useState(false);
     const createChat = useChatStore((s) => s.createChat);
     const setActiveChat = useChatStore((s) => s.setActiveChat);
+    const resetMessages = useMessageStore((s) => s.resetMessages);
 
     const handleCreateChat = async () => {
         setLoading(true);
         try {
             const chat = await createChat(name || undefined);
+            resetMessages();
             setActiveChat(chat);
+
             modals.close("new_chat");
             closeList();
         } catch (error) {
@@ -134,5 +143,30 @@ const NewChatModal: FC<{ closeList: () => void }> = ({ closeList }) => {
                 </Button>
             </Group>
         </Box>
+    );
+};
+
+const LoadMoreButton = () => {
+    const [loading, setLoading] = useState(false);
+    const fetchChats = useChatStore((s) => s.fetchChats);
+    const endReached = useChatStore((s) => s.endReached);
+
+    const handleClick = async () => {
+        setLoading(true);
+        try {
+            await fetchChats();
+        } catch (error) {
+            errNotify(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Group display={endReached ? "none" : undefined} py="xs" justify="center">
+            <Button onClick={handleClick} loading={loading} size="xs" variant="transparent">
+                Load more
+            </Button>
+        </Group>
     );
 };

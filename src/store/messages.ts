@@ -11,38 +11,38 @@ interface MessageStore {
     messages: Message[];
     currentReply: CurrentReply | null;
 
-    page: number;
-    limit?: number;
+    limit: number;
+    endReached: boolean;
     lastMessageID?: string;
 
     fetchMessages(chatID: string): Promise<Message[]>;
     sendMessage(params: CreateUserMessageParams): Promise<Message>;
     appendMessage(msg: Message): void;
     setCurrentReply(message: Message): void;
-    setPage(page: number): void;
     resetMessages(): void;
 }
 
 export const useMessageStore = create<MessageStore>()((set, get) => ({
     messages: [],
     currentReply: null,
-
-    page: 1,
     endReached: false,
+    limit: 20,
 
     async fetchMessages(chatID: string) {
-        const page = get().page;
-        const messages = await api.getMessages(chatID, page);
+        const offset = get().messages.length;
+        const limit = get().limit;
+        const messages = await api.getMessages(chatID, offset, limit);
+        const endReached = messages.length < limit;
 
-        if (page === 1) {
+        if (offset === 0) {
             const lastSystemMessage = messages.find((m) => m.senderID === "system");
             const currentReply = lastSystemMessage
                 ? { to: lastSystemMessage.id, restriction: lastSystemMessage.replyRestriction }
                 : null;
 
-            set({ messages: messages.reverse(), currentReply, lastMessageID: messages.at(-1)?.id });
+            set({ messages: messages.reverse(), currentReply, lastMessageID: messages.at(-1)?.id, endReached });
         } else {
-            set({ messages: [...messages.reverse(), ...get().messages] });
+            set({ messages: [...messages.reverse(), ...get().messages], endReached });
         }
 
         return messages;
@@ -67,11 +67,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
         });
     },
 
-    setPage(page: number) {
-        set({ page });
-    },
-
     resetMessages() {
-        set({ messages: [], page: 1, currentReply: null });
+        set({ messages: [], currentReply: null, endReached: false });
     },
 }));
