@@ -28,6 +28,11 @@ class API {
         return this.makeRequest(url, { method: "POST" });
     }
 
+    async logout() {
+        const url = this.endpoint("logout");
+        return this.makeRequest(url, { method: "POST" });
+    }
+
     async getAppInfo() {
         const url = this.endpoint("info");
         return this.makeRequest<AppInfo>(url);

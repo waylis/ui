@@ -23,7 +23,7 @@ const HeaderMenu = () => {
     const openSettingsModal = () =>
         modals.openContextModal({
             modal: "settings",
-            title: "App settings",
+            title: "Settings",
             size: "lg",
             innerProps: undefined,
         });
