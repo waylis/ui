@@ -12,7 +12,7 @@ export const Header = () => {
     const activeChat = useChatStore((s) => s.activeChat);
 
     return (
-        <Flex w="100%" p={4} px="xs" gap={8} justify="space-between" align="center">
+        <Flex w="100%" p={8} px="xs" gap={8} justify="space-between" align="center">
             <ChatList />
             <Flex maw="100%" gap={8} justify="center" align="center">
                 <Text size="md" lh={0} fw={700}>
