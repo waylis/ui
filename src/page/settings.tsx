@@ -103,15 +103,15 @@ export const SettingsModal = (_props: ContextModalProps) => {
                 />
                 <Space h={8} />
                 <Group justify="flex-end" gap={8}>
-                    <Tooltip label="Copy link to access this user instantly">
-                        <CopyButton value={getAccessLink(activeChat?.creatorID || "")}>
-                            {({ copied, copy }) => (
+                    <CopyButton value={getAccessLink(activeChat?.creatorID || "")}>
+                        {({ copied, copy }) => (
+                            <Tooltip label="Copy the link to instantly access this user">
                                 <Button disabled={!activeChat} onClick={copy} color="gray" variant="light">
                                     {copied ? "Copied" : "Access Link"}
                                 </Button>
-                            )}
-                        </CopyButton>
-                    </Tooltip>
+                            </Tooltip>
+                        )}
+                    </CopyButton>
                     <Tooltip label="Generate a new user">
                         <Button color="gray" variant="light" onClick={confirmNewUser}>
                             New
