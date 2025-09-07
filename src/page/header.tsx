@@ -4,16 +4,22 @@ import { useInfoStore } from "../store/info";
 import { IconDots } from "../icons";
 import { modals } from "@mantine/modals";
 import { spotlight } from "@mantine/spotlight";
+import { useChatStore } from "../store/chats";
+import { trimLongText } from "../utils/string";
 
 export const Header = () => {
     const info = useInfoStore((s) => s.info);
+    const activeChat = useChatStore((s) => s.activeChat);
 
     return (
-        <Flex w="100%" p={4} px="xs" justify="space-between" align="center">
+        <Flex w="100%" p={4} px="xs" gap={8} justify="space-between" align="center">
             <ChatList />
-            <Text size="md" lh={0} fw={700}>
-                {info.name}
-            </Text>
+            <Flex maw="100%" gap={8} justify="center" align="center">
+                <Text size="md" lh={0} fw={700}>
+                    {info.name}
+                </Text>
+                {activeChat && <Text size="sm">{`(${trimLongText(activeChat?.name)})`}</Text>}
+            </Flex>
             <HeaderMenu />
         </Flex>
     );
