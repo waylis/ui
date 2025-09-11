@@ -4,28 +4,28 @@ import { api } from "../api/api";
 import { setFavicon } from "../utils/document";
 
 interface InfoStore {
-    info: Required<AppInfo>;
+  info: Required<AppInfo>;
 
-    fetchInfo(): Promise<AppInfo>;
+  fetchInfo(): Promise<AppInfo>;
 }
 
 const defaultInfo: Required<AppInfo> = {
-    name: "Chat",
-    description: "To start pick a command",
-    faviconURL: "",
+  name: "Chat",
+  description: "To start pick a command",
+  faviconURL: "",
 };
 
 export const useInfoStore = create<InfoStore>()((set) => ({
-    info: defaultInfo,
+  info: defaultInfo,
 
-    async fetchInfo() {
-        const appInfo = await api.getAppInfo();
-        const info = { ...defaultInfo, ...appInfo };
+  async fetchInfo() {
+    const appInfo = await api.getAppInfo();
+    const info = { ...defaultInfo, ...appInfo };
 
-        document.title = info.name;
-        setFavicon(info.faviconURL);
+    document.title = info.name;
+    setFavicon(info.faviconURL);
 
-        set({ info });
-        return info;
-    },
+    set({ info });
+    return info;
+  },
 }));

@@ -16,10 +16,7 @@ export default function App() {
 
   return (
     <MantineProvider defaultColorScheme="dark" theme={{ primaryColor }}>
-      <ModalsProvider
-        modalProps={{ centered: true, m: 0 }}
-        modals={{ settings: SettingsModal }}
-      >
+      <ModalsProvider modalProps={{ centered: true, m: 0 }} modals={{ settings: SettingsModal }}>
         <Notifications position="top-center" />
         <Page />
       </ModalsProvider>

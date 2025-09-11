@@ -7,11 +7,16 @@ interface SettingsStore {
   setPrimaryColor: (color: MantineColor | ((prev: MantineColor) => MantineColor)) => void;
 }
 
-export const useSettingsStore = create<SettingsStore>()(persist((set) => ({
-  primaryColor: "blue",
+export const useSettingsStore = create<SettingsStore>()(
+  persist(
+    (set) => ({
+      primaryColor: "blue",
 
-  setPrimaryColor: (color) =>
-    set((state) => ({
-      primaryColor: typeof color === "function" ? color(state.primaryColor) : color,
-    })),
-}), {name: "settings", }));
+      setPrimaryColor: (color) =>
+        set((state) => ({
+          primaryColor: typeof color === "function" ? color(state.primaryColor) : color,
+        })),
+    }),
+    { name: "settings" },
+  ),
+);

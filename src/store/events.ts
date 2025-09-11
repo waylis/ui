@@ -5,57 +5,57 @@ import { errNotify } from "../utils/notifications";
 type EventHandler = (event: MessageEvent) => void;
 
 interface EventSourceStore {
-    eventSource?: EventSource;
-    lastHeartbeatAt: Date;
-    heartbeatIntervalID?: number;
+  eventSource?: EventSource;
+  lastHeartbeatAt: Date;
+  heartbeatIntervalID?: number;
 
-    open: () => EventSource;
-    addEventHandler: (eventName: string, handler: EventHandler) => void;
-    close: () => void;
+  open: () => EventSource;
+  addEventHandler: (eventName: string, handler: EventHandler) => void;
+  close: () => void;
 }
 
 export const useEventSourceStore = create<EventSourceStore>((set, get) => ({
-    eventSource: undefined,
-    lastHeartbeatAt: new Date(),
+  eventSource: undefined,
+  lastHeartbeatAt: new Date(),
 
-    open() {
-        get().eventSource?.close();
-        const eventSource = new EventSource(api.endpoint("events"));
+  open() {
+    get().eventSource?.close();
+    const eventSource = new EventSource(api.endpoint("events"));
 
-        eventSource.onerror = () => {
-            errNotify("Unable to connect to the server. Please try again later.");
-        };
+    eventSource.onerror = () => {
+      errNotify("Unable to connect to the server. Please try again later.");
+    };
 
-        eventSource.addEventListener("heartbeat", () => {
-            set({ lastHeartbeatAt: new Date() });
-        });
+    eventSource.addEventListener("heartbeat", () => {
+      set({ lastHeartbeatAt: new Date() });
+    });
 
-        const heartbeatIntervalID = setInterval(() => {
-            if (get().eventSource && new Date().getTime() - get().lastHeartbeatAt.getTime() > 10_000) {
-                errNotify("Connection to the server lost. Try reloading the page.");
-                clearInterval(heartbeatIntervalID);
-            }
-        }, 2000);
+    const heartbeatIntervalID = setInterval(() => {
+      if (get().eventSource && new Date().getTime() - get().lastHeartbeatAt.getTime() > 10_000) {
+        errNotify("Connection to the server lost. Try reloading the page.");
+        clearInterval(heartbeatIntervalID);
+      }
+    }, 2000);
 
-        set({ eventSource, heartbeatIntervalID });
-        return eventSource;
-    },
+    set({ eventSource, heartbeatIntervalID });
+    return eventSource;
+  },
 
-    addEventHandler: (eventName: string, handler: EventHandler) => {
-        let { eventSource } = get();
+  addEventHandler: (eventName: string, handler: EventHandler) => {
+    let { eventSource } = get();
 
-        if (!eventSource) {
-            eventSource = get().open();
-        }
+    if (!eventSource) {
+      eventSource = get().open();
+    }
 
-        eventSource.addEventListener(eventName, handler);
-    },
+    eventSource.addEventListener(eventName, handler);
+  },
 
-    close: () => {
-        const { eventSource } = get();
-        if (eventSource) {
-            eventSource.close();
-            set({ eventSource: undefined });
-        }
-    },
+  close: () => {
+    const { eventSource } = get();
+    if (eventSource) {
+      eventSource.close();
+      set({ eventSource: undefined });
+    }
+  },
 }));
