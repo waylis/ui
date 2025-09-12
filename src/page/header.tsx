@@ -18,7 +18,7 @@ export const Header = () => {
         <Text size="md" lh={0} fw={700}>
           {info.name}
         </Text>
-        {activeChat && <Text size="sm">{`(${trimLongText(activeChat?.name)})`}</Text>}
+        {activeChat && <Text size="sm">{`${trimLongText(activeChat?.name)}`}</Text>}
       </Flex>
       <HeaderMenu />
     </Flex>
@@ -26,11 +26,20 @@ export const Header = () => {
 };
 
 const HeaderMenu = () => {
-  const openSettingsModal = () =>
+  const openAppSettingsModal = () =>
     modals.openContextModal({
-      modal: "settings",
+      modal: "appSettings",
       title: "Settings",
       size: "lg",
+      innerProps: undefined,
+    });
+
+  const openChatSettingsModal = () =>
+    modals.openContextModal({
+      modalId: "chat_settings",
+      modal: "chatSettings",
+      title: "Chat settings",
+      size: "md",
       innerProps: undefined,
     });
 
@@ -43,8 +52,9 @@ const HeaderMenu = () => {
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Item onClick={openSettingsModal}>Settings</Menu.Item>
-        <Menu.Item onClick={spotlight.open}>Pick command</Menu.Item>
+        <Menu.Item onClick={openAppSettingsModal}>App Settings</Menu.Item>
+        <Menu.Item onClick={openChatSettingsModal}>Chat Settings</Menu.Item>
+        <Menu.Item onClick={spotlight.open}>Commands</Menu.Item>
       </Menu.Dropdown>
     </Menu>
   );

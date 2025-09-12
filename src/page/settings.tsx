@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Box,
   Button,
   ColorInput,
   CopyButton,
@@ -19,7 +20,7 @@ import { errNotify } from "../utils/notifications";
 import { useChatStore } from "../store/chats";
 import { api } from "../api/api";
 
-export const SettingsModal = (_props: ContextModalProps) => {
+export const AppSettingsModal = (_props: ContextModalProps) => {
   const theme = useMantineTheme();
   const activeChat = useChatStore((s) => s.activeChat);
   const primaryColor = useSettingsStore((s) => s.primaryColor);
@@ -94,7 +95,7 @@ export const SettingsModal = (_props: ContextModalProps) => {
           swatches={availablePrimaryColors.map((c) => c.value)}
         />
       </Fieldset>
-
+      <Space h={8} />
       <Fieldset legend="User">
         <TextInput
           label="Current user ID"
@@ -120,5 +121,45 @@ export const SettingsModal = (_props: ContextModalProps) => {
         </Group>
       </Fieldset>
     </>
+  );
+};
+
+export const ChatSettingsModal = () => {
+  const activeChat = useChatStore((s) => s.activeChat);
+  const setActiveChat = useChatStore((s) => s.setActiveChat);
+  const renameChat = useChatStore((s) => s.renameChat);
+  const [name, setName] = useState(activeChat?.name || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleEditChat = async () => {
+    if (!activeChat) return;
+    setLoading(true);
+    try {
+      const updated = await renameChat(activeChat.id, name);
+      setActiveChat(updated);
+      modals.close("chat_settings");
+    } catch (error) {
+      errNotify(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box>
+      <TextInput
+        value={name}
+        onChange={(event) => setName(event.currentTarget.value)}
+        label="Name"
+        description="Enter a different name for the chat if you want."
+        placeholder="Enter chat name"
+      />
+
+      <Group mt="md" justify="flex-end">
+        <Button disabled={!name || !activeChat} onClick={handleEditChat} loading={loading}>
+          Save
+        </Button>
+      </Group>
+    </Box>
   );
 };

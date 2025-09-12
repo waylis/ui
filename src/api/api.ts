@@ -60,14 +60,19 @@ class API {
     return this.makeRequest<Chat>(url, jsonRequestParams("POST", { name }));
   }
 
-  async getMessages(chat_id: string, offset?: number, limit?: number) {
-    const url = this.endpoint("messages") + queryParams({ chat_id, offset, limit });
-    return this.makeRequest<Message[]>(url);
+  async editChat(id: string, modified: Partial<Chat>) {
+    const url = this.endpoint("chat") + queryParams({ id });
+    return this.makeRequest<Chat>(url, jsonRequestParams("PUT", modified));
   }
 
   async deleteChat(id: string) {
     const url = this.endpoint("chat") + queryParams({ id });
     return this.makeRequest<Chat>(url, jsonRequestParams("DELETE", {}));
+  }
+
+  async getMessages(chat_id: string, offset?: number, limit?: number) {
+    const url = this.endpoint("messages") + queryParams({ chat_id, offset, limit });
+    return this.makeRequest<Message[]>(url);
   }
 
   getFileURL(id: string) {

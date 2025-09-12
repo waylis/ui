@@ -8,7 +8,7 @@ import { MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
 import { Page } from "./page/page";
-import { SettingsModal } from "./page/settings";
+import { ChatSettingsModal, AppSettingsModal } from "./page/settings";
 import { useSettingsStore } from "./store/settings";
 
 export default function App() {
@@ -16,7 +16,10 @@ export default function App() {
 
   return (
     <MantineProvider defaultColorScheme="dark" theme={{ primaryColor }}>
-      <ModalsProvider modalProps={{ centered: true, m: 0 }} modals={{ settings: SettingsModal }}>
+      <ModalsProvider
+        modalProps={{ centered: true, m: 0 }}
+        modals={{ appSettings: AppSettingsModal, chatSettings: ChatSettingsModal }}
+      >
         <Notifications position="top-center" />
         <Page />
       </ModalsProvider>

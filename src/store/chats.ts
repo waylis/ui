@@ -12,6 +12,7 @@ interface ChatStore {
   fetchChats(): Promise<Chat[]>;
   createChat(name?: string): Promise<Chat>;
   deleteChat(id: string): Promise<Chat>;
+  renameChat(id: string, name: string): Promise<Chat>;
 
   setActiveChat(chat: Chat | null): void;
 }
@@ -65,6 +66,17 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     }
 
     return deleted;
+  },
+
+  async renameChat(id: string, name: string) {
+    const updated = await api.editChat(id, { name });
+    set((state) => ({
+      chats: state.chats.map((chat) => {
+        return chat.id === id ? updated : chat;
+      }),
+    }));
+
+    return updated;
   },
 
   setActiveChat(chat: Chat | null) {
