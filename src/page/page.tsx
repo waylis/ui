@@ -70,9 +70,7 @@ export const Page = () => {
 
       <Header />
       <Divider />
-
       <MessageArea />
-
       <InputArea />
     </Flex>
   );

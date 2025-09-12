@@ -6,19 +6,28 @@ import { IconDots } from "../icons";
 import { useInfoStore } from "../store/info";
 import { useChatStore } from "../store/chats";
 import { trimLongText } from "../utils/string";
+import { MarkdownPreview } from "../components/markdown-preview";
 
 export const Header = () => {
   const info = useInfoStore((s) => s.info);
   const activeChat = useChatStore((s) => s.activeChat);
 
+  const openAppInfo = () => {
+    modals.open({
+      title: <Text fw={700}>{info.name}</Text>,
+      children: <MarkdownPreview body={info.description} />,
+      size: "lg",
+    });
+  };
+
   return (
     <Flex w="100%" p={8} px="xs" gap={8} justify="space-between" align="center">
       <ChatList />
       <Flex maw="100%" gap={8} justify="center" align="center">
-        <Text size="md" lh={0} fw={700}>
+        <Text onClick={openAppInfo} size="md" lh={0} fw={700} style={{ cursor: "pointer" }}>
           {info.name}
         </Text>
-        {activeChat && <Text size="sm">{`${trimLongText(activeChat?.name)}`}</Text>}
+        {activeChat && <Text size="sm" c="dimmed">{`${trimLongText(activeChat?.name)}`}</Text>}
       </Flex>
       <HeaderMenu />
     </Flex>

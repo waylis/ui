@@ -1,10 +1,7 @@
-import { Button, Code, Flex, Group, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
+import { Button, Flex, Group, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
 import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import type { Command, FileMeta, Message, OptionLimits } from "@waylis/shared";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { api } from "../api/api";
-import { useInfoStore } from "../store/info";
 import { useChatStore } from "../store/chats";
 import { formatBytes } from "../utils/number";
 import { getMimeCategory } from "../utils/mime";
@@ -12,8 +9,9 @@ import { useCommandStore } from "../store/commands";
 import { useMessageStore } from "../store/messages";
 import { useLighterSchemeColor } from "../hooks/useColors";
 import { errNotify, warnNotify } from "../utils/notifications";
-import { CustomCopyButton } from "../components/custom-copy-button";
+import { MarkdownPreview } from "../components/markdown-preview";
 import styles from "./message-area.module.css";
+import { AppInfo } from "./app-info";
 
 export const MessageArea = () => {
   const isFirstRender = useRef(true);
@@ -64,7 +62,7 @@ export const MessageArea = () => {
         </ScrollArea>
       )}
 
-      {messages.length === 0 && <WelcomeLabel />}
+      {messages.length === 0 && <AppInfo />}
     </Flex>
   );
 };
@@ -96,24 +94,6 @@ const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ vi
         Load more
       </Button>
     </Group>
-  );
-};
-
-const WelcomeLabel = () => {
-  const bgColor = useLighterSchemeColor();
-  const info = useInfoStore((s) => s.info);
-
-  return (
-    <Flex justify="center" align="center">
-      <Paper bg={bgColor} radius="md" p="md" maw={500}>
-        <Text fw="bolder" ta="center" c="dimmed">
-          Welcome
-        </Text>
-        <Text mt="sm" lh={1.3} c="dimmed" ta="justify">
-          {info.description}
-        </Text>
-      </Paper>
-    </Flex>
   );
 };
 
@@ -257,37 +237,5 @@ const FilesPreview: FC<{ files: FileMeta[] }> = ({ files }) => {
         <FilePreview key={file.id} file={file} />
       ))}
     </Flex>
-  );
-};
-
-const MarkdownPreview: FC<{ body: string }> = ({ body }) => {
-  return (
-    <Markdown
-      components={{
-        code: (props) => {
-          const { children } = props;
-          const code = children?.toString() || "";
-          const lines = code.split("\n").length - 1;
-          const symbols = code.length;
-          return (
-            <>
-              <Code block>{children}</Code>
-              <Flex justify="flex-end" gap="sm" align="center">
-                <Text lh={0} p={0} size="xs" opacity={0.7}>
-                  {`lines: ${lines}`}
-                </Text>
-                <Text lh={0} p={0} size="xs" opacity={0.7}>
-                  {`symbols: ${symbols}`}
-                </Text>
-                <CustomCopyButton value={children?.toString() || ""} />
-              </Flex>
-            </>
-          );
-        },
-      }}
-      remarkPlugins={[remarkGfm]}
-    >
-      {body}
-    </Markdown>
   );
 };

@@ -11,7 +11,7 @@ interface InfoStore {
 
 const defaultInfo: Required<AppInfo> = {
   name: "Chat",
-  description: "To start pick a command",
+  description: "👋 **Welcome**\n\nTo start interacting with the app, pick a command.",
   faviconURL: "",
 };
 
