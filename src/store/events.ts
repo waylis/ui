@@ -4,6 +4,8 @@ import { errNotify } from "../utils/notifications";
 
 type EventHandler = (event: MessageEvent) => void;
 
+const MAX_HEARTBEAT_TIMEOUT = 20_000;
+
 interface EventSourceStore {
   eventSource?: EventSource;
   lastHeartbeatAt: Date;
@@ -31,7 +33,7 @@ export const useEventSourceStore = create<EventSourceStore>((set, get) => ({
     });
 
     const heartbeatIntervalID = setInterval(() => {
-      if (get().eventSource && new Date().getTime() - get().lastHeartbeatAt.getTime() > 10_000) {
+      if (get().eventSource && new Date().getTime() - get().lastHeartbeatAt.getTime() > MAX_HEARTBEAT_TIMEOUT) {
         errNotify("Connection to the server lost. Try reloading the page.");
         clearInterval(heartbeatIntervalID);
       }
