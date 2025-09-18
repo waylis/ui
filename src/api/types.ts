@@ -1,10 +1,6 @@
-import type { Message, UserMessageBody } from "@waylis/shared";
+import type { Message, ServerConfig, UserMessageBody } from "@waylis/shared";
 
-export interface AppInfo {
-  name?: string;
-  description?: string;
-  faviconURL?: string;
-}
+export type Config = Pick<ServerConfig, "app">;
 
 export type CreateUserMessageParams = Pick<Message, "chatID" | "body" | "replyTo"> & {
   body: UserMessageBody;

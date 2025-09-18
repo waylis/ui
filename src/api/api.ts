@@ -1,7 +1,7 @@
 import { getQueryParam, setQueryParam } from "../utils/url";
 import type { Chat, Command, FileMeta, Message } from "@waylis/shared";
 import { getFileNameFromContentDisposition, jsonRequestParams, queryParams } from "./utils";
-import type { AppInfo, CreateUserMessageParams } from "./types";
+import type { Config, CreateUserMessageParams } from "./types";
 import { jsonDateReviver } from "../utils/date";
 
 class API {
@@ -35,9 +35,9 @@ class API {
     return this.makeRequest(url, { method: "POST" });
   }
 
-  async getAppInfo() {
-    const url = this.endpoint("info");
-    return this.makeRequest<AppInfo>(url);
+  async getConfig() {
+    const url = this.endpoint("config");
+    return this.makeRequest<Config>(url);
   }
 
   async getCommands() {

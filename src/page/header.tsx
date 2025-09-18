@@ -3,19 +3,19 @@ import { modals } from "@mantine/modals";
 import { spotlight } from "@mantine/spotlight";
 import { ChatList } from "./chat-list";
 import { IconDots } from "../icons";
-import { useInfoStore } from "../store/info";
+import { useConfigStore } from "../store/config";
 import { useChatStore } from "../store/chats";
 import { trimLongText } from "../utils/string";
 import { MarkdownPreview } from "../components/markdown-preview";
 
 export const Header = () => {
-  const info = useInfoStore((s) => s.info);
+  const config = useConfigStore((s) => s.config);
   const activeChat = useChatStore((s) => s.activeChat);
 
   const openAppInfo = () => {
     modals.open({
-      title: <Text fw={700}>{info.name}</Text>,
-      children: <MarkdownPreview body={info.description} />,
+      title: <Text fw={700}>{config.app.name}</Text>,
+      children: <MarkdownPreview body={config.app.description || ""} />,
       size: "lg",
     });
   };
@@ -25,7 +25,7 @@ export const Header = () => {
       <ChatList />
       <Flex maw="100%" gap={8} justify="center" align="center">
         <Text onClick={openAppInfo} size="md" lh={0} fw={700} style={{ cursor: "pointer" }}>
-          {info.name}
+          {config.app.name}
         </Text>
         {activeChat && <Text size="sm" c="dimmed">{`${trimLongText(activeChat?.name)}`}</Text>}
       </Flex>

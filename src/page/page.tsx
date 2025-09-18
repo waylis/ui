@@ -4,7 +4,7 @@ import type { Message } from "@waylis/shared";
 import { Header } from "./header";
 import { delay } from "../utils/async";
 import { InputArea } from "./input-area";
-import { useInfoStore } from "../store/info";
+import { useConfigStore } from "../store/config";
 import { MessageArea } from "./message-area";
 import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
@@ -16,7 +16,7 @@ export const Page = () => {
   const [loading, setLoading] = useState(false);
   const fetchChats = useChatStore((s) => s.fetchChats);
   const activeChat = useChatStore((s) => s.activeChat);
-  const fetchInfo = useInfoStore((s) => s.fetchInfo);
+  const fetchInfo = useConfigStore((s) => s.fetchConfig);
   const fetchMessages = useMessageStore((s) => s.fetchMessages);
   const fetchCommands = useCommandStore((s) => s.fetchCommands);
   const addEventHandler = useEventSourceStore((s) => s.addEventHandler);
