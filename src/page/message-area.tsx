@@ -150,7 +150,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
       return <MarkdownPreview body={message.body.content} />;
     }
 
-    return message.body.content as string;
+    return <Text style={{ overflowWrap: "anywhere" }}>{message.body.content.toString()}</Text>;
   };
 
   return (
