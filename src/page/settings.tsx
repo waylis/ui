@@ -49,12 +49,7 @@ export const AppSettingsModal = (_props: ContextModalProps) => {
   const confirmNewUser = () => {
     modals.openConfirmModal({
       title: "Please confirm your action",
-      children: (
-        <Text size="sm">
-          Are you sure you want to generate a new user? To return to the current user, you will need to use the
-          corresponding access link.
-        </Text>
-      ),
+      children: <Text size="sm">Are you sure you want to logout from current user?</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: async () => {
         await logout();
@@ -106,16 +101,16 @@ export const AppSettingsModal = (_props: ContextModalProps) => {
         <Group justify="flex-end" gap={8}>
           <CopyButton value={getAccessLink(activeChat?.creatorID || "")}>
             {({ copied, copy }) => (
-              <Tooltip label="Copy the link to instantly access this user">
+              <Tooltip label="Copy the link to access this user">
                 <Button disabled={!activeChat} onClick={copy} color="gray" variant="light">
                   {copied ? "Copied" : "Access Link"}
                 </Button>
               </Tooltip>
             )}
           </CopyButton>
-          <Tooltip label="Generate a new user">
-            <Button color="gray" variant="light" onClick={confirmNewUser}>
-              New
+          <Tooltip label="Logout from current user">
+            <Button color="red" variant="light" onClick={confirmNewUser}>
+              Logout
             </Button>
           </Tooltip>
         </Group>
