@@ -397,8 +397,8 @@ const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <FileInput
+        flex={1}
         miw={200}
-        maw={500}
         accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
         clearable
         value={value}
@@ -445,8 +445,8 @@ const FilesForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <FileInput
+        flex={1}
         miw={200}
-        maw={500}
         accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
         multiple
         clearable
