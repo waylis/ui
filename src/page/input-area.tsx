@@ -312,6 +312,7 @@ const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <Select
+        flex={1}
         miw={200}
         data={(currentReply.restriction?.bodyLimits as OptionLimits).options.map((o) => ({
           value: o.value,
@@ -319,6 +320,7 @@ const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
         }))}
         comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
         allowDeselect={false}
+        searchable
         value={value}
         onChange={setValue}
         placeholder="Pick a value"
@@ -349,11 +351,13 @@ const OptionsForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <MultiSelect
+        flex={1}
         miw={200}
         data={(currentReply.restriction?.bodyLimits as OptionsLimits).options.map((o) => ({
           value: o.value,
           label: o.label ?? o.value,
         }))}
+        searchable
         maxValues={(currentReply.restriction?.bodyLimits as OptionsLimits).maxAmount}
         comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
         value={value}
