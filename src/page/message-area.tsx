@@ -1,18 +1,19 @@
 import { Button, Flex, Group, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
 import { useEffect, useRef, useState, type FC, type RefObject } from "react";
 import type { Command, FileMeta, Message, OptionLimits } from "@waylis/shared";
+import { AppInfo } from "./app-info";
 import { api } from "../api/api";
 import { useChatStore } from "../store/chats";
-import { formatBytes } from "../utils/number";
-import { getMimeCategory } from "../utils/mime";
 import { useCommandStore } from "../store/commands";
 import { useMessageStore } from "../store/messages";
+import { useSettingsStore } from "../store/settings";
 import { useLighterSchemeColor } from "../hooks/useColors";
+import { formatBytes } from "../utils/number";
+import { getMimeCategory } from "../utils/mime";
 import { errNotify, warnNotify } from "../utils/notifications";
 import { MarkdownPreview } from "../components/markdown-preview";
+import ComponentErrorBoundary from "../components/component-error-boundary";
 import styles from "./message-area.module.css";
-import { AppInfo } from "./app-info";
-import { useSettingsStore } from "../store/settings";
 
 export const MessageArea = () => {
   const isFirstRender = useRef(true);
@@ -51,14 +52,16 @@ export const MessageArea = () => {
                 nextMessage && new Date(nextMessage.createdAt).getTime() - new Date(message.createdAt).getTime() < 1000;
 
               return (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  messages={messages}
-                  commands={commands}
-                  primaryColor={theme.primaryColor}
-                  withoutTime={!showMessageTimes || (isNextSystem && isNextNoTimeDiff)}
-                />
+                <ComponentErrorBoundary>
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    messages={messages}
+                    commands={commands}
+                    primaryColor={theme.primaryColor}
+                    withoutTime={!showMessageTimes || (isNextSystem && isNextNoTimeDiff)}
+                  />
+                </ComponentErrorBoundary>
               );
             })}
           </Flex>
@@ -158,7 +161,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
 
   return (
     <Paper bg={isUser ? bgColor : undefined} p="sm" my="xs" radius="md">
-      {["file", "files", "markdown"].includes(message.body.type) ? (
+      {["file", "files", "markdown", "text"].includes(message.body.type) ? (
         content()
       ) : (
         <Text c={isCommand ? primaryColor : undefined}>{content()}</Text>

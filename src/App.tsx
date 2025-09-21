@@ -10,19 +10,22 @@ import { Notifications } from "@mantine/notifications";
 import { Page } from "./page/page";
 import { ChatSettingsModal, AppSettingsModal } from "./page/settings";
 import { useSettingsStore } from "./store/settings";
+import AppErrorBoundary from "./components/app-error-boundary";
 
 export default function App() {
   const primaryColor = useSettingsStore((s) => s.primaryColor);
 
   return (
     <MantineProvider defaultColorScheme="dark" theme={{ primaryColor }}>
-      <ModalsProvider
-        modalProps={{ centered: true, m: 0 }}
-        modals={{ appSettings: AppSettingsModal, chatSettings: ChatSettingsModal }}
-      >
-        <Notifications position="top-center" />
-        <Page />
-      </ModalsProvider>
+      <AppErrorBoundary>
+        <ModalsProvider
+          modalProps={{ centered: true, m: 0 }}
+          modals={{ appSettings: AppSettingsModal, chatSettings: ChatSettingsModal }}
+        >
+          <Notifications position="top-center" />
+          <Page />
+        </ModalsProvider>
+      </AppErrorBoundary>
     </MantineProvider>
   );
 }
