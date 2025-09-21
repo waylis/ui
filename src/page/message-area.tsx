@@ -1,6 +1,19 @@
-import { Button, Flex, Group, Image, Paper, ScrollArea, Space, Text, useMantineTheme } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  Group,
+  Image,
+  Paper,
+  ScrollArea,
+  Space,
+  Table as TableComponent,
+  Text,
+  useMantineTheme,
+  type TableData,
+} from "@mantine/core";
+import { LineChart as LineChartComponent } from "@mantine/charts";
 import { useEffect, useRef, useState, type FC, type RefObject } from "react";
-import type { Command, FileMeta, Message, OptionLimits } from "@waylis/shared";
+import type { Command, FileMeta, LineChart, Message, OptionLimits, Table } from "@waylis/shared";
 import { AppInfo } from "./app-info";
 import { api } from "../api/api";
 import { useChatStore } from "../store/chats";
@@ -38,7 +51,7 @@ export const MessageArea = () => {
   }, [lastMessageID]);
 
   return (
-    <Flex flex={1} justify="center" style={{ overflowY: "auto" }}>
+    <Flex flex={1} justify="center" py={1} style={{ overflowY: "auto" }}>
       {messages.length > 0 && (
         <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
           <Space h={4} />
@@ -111,7 +124,7 @@ interface ChatMessageProps {
   withoutTime?: boolean;
 }
 
-function resolveLabels(values: string[], message: Message, messages: Message[]): string[] {
+function resolveOptionLabels(values: string[], message: Message, messages: Message[]): string[] {
   if (!message.replyTo) return values;
 
   const sys = messages.find((m) => m.id === message.replyTo);
@@ -120,6 +133,8 @@ function resolveLabels(values: string[], message: Message, messages: Message[]):
   const options = (sys.replyRestriction?.bodyLimits as OptionLimits).options;
   return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
 }
+
+const NON_TEXT_CONTENT_TYPES = ["file", "files", "markdown", "linechart", "table"];
 
 const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor, withoutTime }) => {
   const isUser = message.senderID !== "system";
@@ -137,11 +152,11 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
     if (message.body.type === "datetime") return new Date(message.body.content).toLocaleString();
 
     if (message.body.type === "option") {
-      return resolveLabels([message.body.content], message, messages)[0];
+      return resolveOptionLabels([message.body.content], message, messages)[0];
     }
 
     if (message.body.type === "options") {
-      return resolveLabels(message.body.content, message, messages).join(", ");
+      return resolveOptionLabels(message.body.content, message, messages).join(", ");
     }
 
     if (message.body.type === "file") {
@@ -156,15 +171,25 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
       return <MarkdownPreview body={message.body.content} />;
     }
 
-    return <Text style={{ overflowWrap: "anywhere" }}>{message.body.content.toString()}</Text>;
+    if (message.body.type === "linechart") {
+      return <LineChartPreview params={message.body.content} />;
+    }
+
+    if (message.body.type === "table") {
+      return <TablePreview params={message.body.content} />;
+    }
+
+    return message.body.content.toString();
   };
 
   return (
     <Paper bg={isUser ? bgColor : undefined} p="sm" my="xs" radius="md">
-      {["file", "files", "markdown", "text"].includes(message.body.type) ? (
+      {NON_TEXT_CONTENT_TYPES.includes(message.body.type) ? (
         content()
       ) : (
-        <Text c={isCommand ? primaryColor : undefined}>{content()}</Text>
+        <Text style={{ overflowWrap: "anywhere" }} c={isCommand ? primaryColor : undefined}>
+          {content()}
+        </Text>
       )}
 
       {!withoutTime && (
@@ -243,5 +268,37 @@ const FilesPreview: FC<{ files: FileMeta[] }> = ({ files }) => {
         <FilePreview key={file.id} file={file} />
       ))}
     </Flex>
+  );
+};
+
+const LineChartPreview: FC<{ params: LineChart }> = ({ params }) => {
+  return (
+    <div>
+      <LineChartComponent
+        h={params.height || 300}
+        data={params.data}
+        dataKey={params.dataKey}
+        series={params.series}
+        curveType={params.curveType || "linear"}
+        tickLine="xy"
+        gridAxis="xy"
+        xAxisProps={params.xAxisProps}
+        yAxisProps={params.yAxisProps}
+      />
+    </div>
+  );
+};
+
+const TablePreview: FC<{ params: Table }> = ({ params }) => {
+  return (
+    <TableComponent.ScrollContainer minWidth={300} type="native">
+      <TableComponent
+        stickyHeader
+        highlightOnHover
+        withTableBorder
+        withColumnBorders
+        data={params as unknown as TableData}
+      />
+    </TableComponent.ScrollContainer>
   );
 };
