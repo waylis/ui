@@ -6,6 +6,7 @@ import {
   CopyButton,
   Fieldset,
   Group,
+  Slider,
   Space,
   Switch,
   Text,
@@ -22,11 +23,16 @@ import { api } from "../api/api";
 
 export const AppSettingsModal = (_props: ContextModalProps) => {
   const theme = useMantineTheme();
-  const activeChat = useChatStore((s) => s.activeChat);
-  const primaryColor = useSettingsStore((s) => s.primaryColor);
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [isDark, setIsDark] = useState(colorScheme === "dark");
+
+  const activeChat = useChatStore((s) => s.activeChat);
+  const primaryColor = useSettingsStore((s) => s.primaryColor);
+  const maxMessageWidth = useSettingsStore((s) => s.maxMessageWidth);
+  const showMessageTimes = useSettingsStore((s) => s.showMessageTimes);
   const setPrimaryColor = useSettingsStore((s) => s.setPrimaryColor);
+  const setMaxMessageWidth = useSettingsStore((s) => s.setMaxMessageWidth);
+  const setShowMessageTimes = useSettingsStore((s) => s.setShowMessageTimes);
 
   const availablePrimaryColors = Object.keys(theme.colors).map((name) => {
     return { name, value: theme.colors[name][6] };
@@ -75,7 +81,18 @@ export const AppSettingsModal = (_props: ContextModalProps) => {
             setIsDark(val);
           }}
         />
-        <Space h={8} />
+        <Space h={16} />
+        <Switch
+          label="Show message times"
+          width="100%"
+          withThumbIndicator={false}
+          labelPosition="right"
+          description="Determines whether to display the date and time for each message."
+          checked={showMessageTimes}
+          // color={theme.primaryColor}
+          onChange={(event) => setShowMessageTimes(event.currentTarget.checked)}
+        />
+        <Space h={16} />
         <ColorInput
           disallowInput
           withPicker={false}
@@ -89,6 +106,14 @@ export const AppSettingsModal = (_props: ContextModalProps) => {
           }}
           swatches={availablePrimaryColors.map((c) => c.value)}
         />
+        <Space h={16} />
+        <Box>
+          <Text size="sm">Message width in pixels</Text>
+          <Text size="xs" c="dimmed">
+            Determines how wide the chat area with messages will be.
+          </Text>
+          <Slider value={maxMessageWidth} onChange={setMaxMessageWidth} min={400} max={window.screen.width} step={10} />
+        </Box>
       </Fieldset>
       <Space h={8} />
       <Fieldset legend="User">

@@ -12,6 +12,7 @@ import { errNotify, warnNotify } from "../utils/notifications";
 import { MarkdownPreview } from "../components/markdown-preview";
 import styles from "./message-area.module.css";
 import { AppInfo } from "./app-info";
+import { useSettingsStore } from "../store/settings";
 
 export const MessageArea = () => {
   const isFirstRender = useRef(true);
@@ -19,6 +20,8 @@ export const MessageArea = () => {
   const messages = useMessageStore((s) => s.messages);
   const lastMessageID = useMessageStore((s) => s.lastMessageID);
   const commands = useCommandStore((s) => s.commands);
+  const maxWidth = useSettingsStore((s) => s.maxMessageWidth);
+  const showMessageTimes = useSettingsStore((s) => s.showMessageTimes);
   const theme = useMantineTheme();
 
   const scrollToBottom = () => viewport.current?.scrollTo({ top: viewport.current!.scrollHeight, behavior: "smooth" });
@@ -39,7 +42,7 @@ export const MessageArea = () => {
         <ScrollArea scrollHideDelay={300} scrollbarSize={8} viewportRef={viewport} w="100%" px="sm">
           <Space h={4} />
 
-          <Flex direction="column" maw={765} m="0 auto">
+          <Flex direction="column" maw={maxWidth} m="0 auto">
             <LoadMoreButton viewport={viewport} />
             {messages.map((message, index) => {
               const nextMessage = messages[index + 1];
@@ -54,7 +57,7 @@ export const MessageArea = () => {
                   messages={messages}
                   commands={commands}
                   primaryColor={theme.primaryColor}
-                  withoutTime={isNextSystem && isNextNoTimeDiff}
+                  withoutTime={!showMessageTimes || (isNextSystem && isNextNoTimeDiff)}
                 />
               );
             })}

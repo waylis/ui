@@ -17,8 +17,10 @@ import { useChatStore } from "../store/chats";
 import { useCommandStore } from "../store/commands";
 import { errNotify, warnNotify } from "../utils/notifications";
 import { useMessageStore, type CurrentReply } from "../store/messages";
+import { useSettingsStore } from "../store/settings";
 
 const MAX_RESPONSE_WAIT_TIME_MS = 5000;
+const MAX_INPUT_AREA_WIDTH = 760;
 
 export const InputArea = () => {
   const [isBlocked, setIsBlocked] = useState(false);
@@ -26,6 +28,7 @@ export const InputArea = () => {
   const currentReply = useMessageStore((s) => s.currentReply);
   const messages = useMessageStore((s) => s.messages);
   const activeChat = useChatStore((s) => s.activeChat);
+  const maxWidth = useSettingsStore((s) => s.maxMessageWidth);
 
   const handleUnblockInput = () => {
     clearTimeout(unblockTimeout.current);
@@ -53,7 +56,14 @@ export const InputArea = () => {
 
   return (
     <Flex w="100%" justify="center" pb="xs">
-      <Paper w="100%" maw={765} p="sm" mih={100} radius="md" style={{ display: "flex", alignItems: "center" }}>
+      <Paper
+        w="100%"
+        maw={Math.min(maxWidth, MAX_INPUT_AREA_WIDTH)}
+        p="sm"
+        mih={100}
+        radius="md"
+        style={{ display: "flex", alignItems: "center" }}
+      >
         {isBlocked ? (
           <Flex flex={1} justify="center" align="center">
             <Loader variant="dots" type="dots" />
