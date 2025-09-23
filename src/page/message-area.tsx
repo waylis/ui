@@ -275,15 +275,11 @@ const LineChartPreview: FC<{ params: LineChart }> = ({ params }) => {
   return (
     <div>
       <LineChartComponent
+        {...params}
         h={params.height || 300}
-        data={params.data}
-        dataKey={params.dataKey}
-        series={params.series}
         curveType={params.curveType || "linear"}
         tickLine="xy"
         gridAxis="xy"
-        xAxisProps={params.xAxisProps}
-        yAxisProps={params.yAxisProps}
       />
     </div>
   );
