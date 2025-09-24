@@ -65,9 +65,8 @@ export const MessageArea = () => {
                 nextMessage && new Date(nextMessage.createdAt).getTime() - new Date(message.createdAt).getTime() < 1000;
 
               return (
-                <ComponentErrorBoundary>
+                <ComponentErrorBoundary key={message.id}>
                   <ChatMessage
-                    key={message.id}
                     message={message}
                     messages={messages}
                     commands={commands}

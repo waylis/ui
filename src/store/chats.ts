@@ -14,6 +14,7 @@ interface ChatStore {
   deleteChat(id: string): Promise<Chat>;
   renameChat(id: string, name: string): Promise<Chat>;
 
+  setPageLimit(limit: number): void;
   setActiveChat(chat: Chat | null): void;
 }
 
@@ -77,6 +78,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     }));
 
     return updated;
+  },
+
+  setPageLimit(limit: number) {
+    set({ limit });
   },
 
   setActiveChat(chat: Chat | null) {

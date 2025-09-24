@@ -14,9 +14,11 @@ import { useEventSourceStore } from "../store/events";
 
 export const Page = () => {
   const [loading, setLoading] = useState(false);
+  const setChatPageLimit = useChatStore((s) => s.setPageLimit);
   const fetchChats = useChatStore((s) => s.fetchChats);
   const activeChat = useChatStore((s) => s.activeChat);
-  const fetchInfo = useConfigStore((s) => s.fetchConfig);
+  const fetchConfig = useConfigStore((s) => s.fetchConfig);
+  const setMessagePageLimit = useMessageStore((s) => s.setPageLimit);
   const fetchMessages = useMessageStore((s) => s.fetchMessages);
   const fetchCommands = useCommandStore((s) => s.fetchCommands);
   const addEventHandler = useEventSourceStore((s) => s.addEventHandler);
@@ -38,7 +40,11 @@ export const Page = () => {
   const loadResources = async () => {
     setLoading(true);
     try {
-      await Promise.all([fetchInfo(), fetchCommands()]);
+      const [config] = await Promise.all([fetchConfig(), fetchCommands()]);
+
+      setMessagePageLimit(config.defaultPageLimit);
+      setChatPageLimit(config.defaultPageLimit);
+
       await fetchChats();
 
       addEventHandler("newSystemResponse", async (e) => {

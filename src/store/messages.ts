@@ -19,6 +19,7 @@ interface MessageStore {
   fetchMessages(chatID: string): Promise<Message[]>;
   sendMessage(params: CreateUserMessageParams): Promise<Message>;
   appendMessage(msg: Message): void;
+  setPageLimit(limit: number): void;
   setCurrentReply(message: Message): void;
   resetMessages(): void;
 }
@@ -66,6 +67,10 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
         restriction: message.replyRestriction,
       },
     });
+  },
+
+  setPageLimit(limit: number) {
+    set({ limit });
   },
 
   resetMessages() {
