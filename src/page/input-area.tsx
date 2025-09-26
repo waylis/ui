@@ -48,7 +48,7 @@ export const InputArea = () => {
       if (timeDiff > MAX_RESPONSE_WAIT_TIME_MS) return;
 
       setIsBlocked(true);
-      unblockTimeout.current = setTimeout(handleUnblockInput, Math.max(MAX_RESPONSE_WAIT_TIME_MS - timeDiff, 0));
+      unblockTimeout.current = window.setTimeout(handleUnblockInput, Math.max(MAX_RESPONSE_WAIT_TIME_MS - timeDiff, 0));
     }
 
     return handleUnblockInput;

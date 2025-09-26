@@ -32,7 +32,7 @@ export const useEventSourceStore = create<EventSourceStore>((set, get) => ({
       set({ lastHeartbeatAt: new Date() });
     });
 
-    const heartbeatIntervalID = setInterval(() => {
+    const heartbeatIntervalID = window.setInterval(() => {
       if (get().eventSource && new Date().getTime() - get().lastHeartbeatAt.getTime() > MAX_HEARTBEAT_TIMEOUT) {
         errNotify("Connection to the server lost. Try reloading the page.");
         clearInterval(heartbeatIntervalID);
