@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import type { Message, ReplyRestriction } from "@waylis/shared";
+import type { Message, ExpectedReply } from "@waylis/shared";
 import type { CreateUserMessageParams } from "../api/types";
 import { api } from "../api/api";
 
 export interface CurrentReply {
   to: string;
-  restriction?: ReplyRestriction;
+  expected?: ExpectedReply;
 }
 
 interface MessageStore {
@@ -64,7 +64,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     set({
       currentReply: {
         to: message.id,
-        restriction: message.reply,
+        expected: message.reply,
       },
     });
   },

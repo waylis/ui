@@ -70,30 +70,26 @@ export const InputArea = () => {
           </Flex>
         ) : (
           <>
-            <CommandPicker hidden={!!currentReply?.restriction} chat={activeChat} />
+            <CommandPicker hidden={!!currentReply?.expected} chat={activeChat} />
 
-            {currentReply?.restriction?.bodyType === "text" && (
-              <TextForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.restriction?.bodyType === "number" && (
+            {currentReply?.expected?.bodyType === "text" && <TextForm currentReply={currentReply} chat={activeChat!} />}
+            {currentReply?.expected?.bodyType === "number" && (
               <NumberForm currentReply={currentReply} chat={activeChat!} />
             )}
-            {currentReply?.restriction?.bodyType === "boolean" && (
+            {currentReply?.expected?.bodyType === "boolean" && (
               <BooleanForm currentReply={currentReply} chat={activeChat!} />
             )}
-            {currentReply?.restriction?.bodyType === "datetime" && (
+            {currentReply?.expected?.bodyType === "datetime" && (
               <DatetimeForm currentReply={currentReply} chat={activeChat!} />
             )}
-            {currentReply?.restriction?.bodyType === "option" && (
+            {currentReply?.expected?.bodyType === "option" && (
               <OptionForm currentReply={currentReply} chat={activeChat!} />
             )}
-            {currentReply?.restriction?.bodyType === "options" && (
+            {currentReply?.expected?.bodyType === "options" && (
               <OptionsForm currentReply={currentReply} chat={activeChat!} />
             )}
-            {currentReply?.restriction?.bodyType === "file" && (
-              <FileForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.restriction?.bodyType === "files" && (
+            {currentReply?.expected?.bodyType === "file" && <FileForm currentReply={currentReply} chat={activeChat!} />}
+            {currentReply?.expected?.bodyType === "files" && (
               <FilesForm currentReply={currentReply} chat={activeChat!} />
             )}
           </>
@@ -210,9 +206,9 @@ const NumberForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <NumberInput
-        allowDecimal={!(currentReply.restriction?.bodyLimits as NumberLimits)?.integerOnly}
-        max={(currentReply.restriction?.bodyLimits as NumberLimits)?.max}
-        min={(currentReply.restriction?.bodyLimits as NumberLimits)?.min}
+        allowDecimal={!(currentReply.expected?.bodyLimits as NumberLimits)?.integerOnly}
+        max={(currentReply.expected?.bodyLimits as NumberLimits)?.max}
+        min={(currentReply.expected?.bodyLimits as NumberLimits)?.min}
         autoCorrect="off"
         autoComplete="off"
         size="md"
@@ -289,8 +285,8 @@ const DatetimeForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <DateTimePicker
-        minDate={(currentReply.restriction?.bodyLimits as DatetimeLimits).min}
-        maxDate={(currentReply.restriction?.bodyLimits as DatetimeLimits).max}
+        minDate={(currentReply.expected?.bodyLimits as DatetimeLimits).min}
+        maxDate={(currentReply.expected?.bodyLimits as DatetimeLimits).max}
         w={220}
         value={value}
         onChange={(date) => setValue(date ? new Date(date) : null)}
@@ -324,7 +320,7 @@ const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
       <Select
         flex={1}
         miw={200}
-        data={(currentReply.restriction?.bodyLimits as OptionLimits).options.map((o) => ({
+        data={(currentReply.expected?.bodyLimits as OptionLimits).options.map((o) => ({
           value: o.value,
           label: o.label ?? o.value,
         }))}
@@ -363,12 +359,12 @@ const OptionsForm: FC<FormProps> = ({ chat, currentReply }) => {
       <MultiSelect
         flex={1}
         miw={200}
-        data={(currentReply.restriction?.bodyLimits as OptionsLimits).options.map((o) => ({
+        data={(currentReply.expected?.bodyLimits as OptionsLimits).options.map((o) => ({
           value: o.value,
           label: o.label ?? o.value,
         }))}
         searchable
-        maxValues={(currentReply.restriction?.bodyLimits as OptionsLimits).maxAmount}
+        maxValues={(currentReply.expected?.bodyLimits as OptionsLimits).maxAmount}
         comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
         value={value}
         onChange={setValue}
@@ -389,7 +385,7 @@ const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
   const sendFile = async (file: File) => {
     setLoading(true);
     try {
-      const maxSize = (currentReply.restriction?.bodyLimits as FileLimits)?.maxSize;
+      const maxSize = (currentReply.expected?.bodyLimits as FileLimits)?.maxSize;
       if (maxSize && file.size > maxSize) {
         warnNotify(`The file is too large. The maximum allowed size is ${formatBytes(maxSize)}.`);
         return;
@@ -409,7 +405,7 @@ const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
       <FileInput
         flex={1}
         miw={200}
-        accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
+        accept={(currentReply.expected?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
         clearable
         value={value}
         onChange={setValue}
@@ -431,7 +427,7 @@ const FilesForm: FC<FormProps> = ({ chat, currentReply }) => {
   const sendFiles = async (files: File[]) => {
     setLoading(true);
     try {
-      const maxSize = (currentReply.restriction?.bodyLimits as FileLimits)?.maxSize;
+      const maxSize = (currentReply.expected?.bodyLimits as FileLimits)?.maxSize;
 
       const requests: Promise<FileMeta>[] = [];
       for (const file of files) {
@@ -457,7 +453,7 @@ const FilesForm: FC<FormProps> = ({ chat, currentReply }) => {
       <FileInput
         flex={1}
         miw={200}
-        accept={(currentReply.restriction?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
+        accept={(currentReply.expected?.bodyLimits as FileLimits)?.mimeTypes?.join(",")}
         multiple
         clearable
         value={value}
