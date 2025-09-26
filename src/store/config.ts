@@ -10,6 +10,7 @@ interface ConfigStore {
 }
 
 const defaultConfig: Required<Config> = {
+  defaultPageLimit: 20,
   app: {
     name: "Waylis",
     description: "👋 **Welcome**\n\nTo start interacting with the app, pick a command.",
