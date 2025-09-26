@@ -39,7 +39,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     if (offset === 0) {
       const lastSystemMessage = messages.find((m) => m.senderID === "system");
       const currentReply = lastSystemMessage
-        ? { to: lastSystemMessage.id, restriction: lastSystemMessage.replyRestriction }
+        ? { to: lastSystemMessage.id, restriction: lastSystemMessage.reply }
         : null;
 
       set({ messages: messages.reverse(), currentReply, lastMessageID: messages.at(-1)?.id, endReached });
@@ -64,7 +64,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
     set({
       currentReply: {
         to: message.id,
-        restriction: message.replyRestriction,
+        restriction: message.reply,
       },
     });
   },

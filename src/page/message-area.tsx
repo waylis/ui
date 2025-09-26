@@ -129,7 +129,7 @@ function resolveOptionLabels(values: string[], message: Message, messages: Messa
   const sys = messages.find((m) => m.id === message.replyTo);
   if (!sys) return values;
 
-  const options = (sys.replyRestriction?.bodyLimits as OptionLimits).options;
+  const options = (sys.reply?.bodyLimits as OptionLimits).options;
   return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
 }
 
