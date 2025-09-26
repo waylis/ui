@@ -89,7 +89,6 @@ export const AppSettingsModal = (_props: ContextModalProps) => {
           labelPosition="right"
           description="Determines whether to display the date and time for each message."
           checked={showMessageTimes}
-          // color={theme.primaryColor}
           onChange={(event) => setShowMessageTimes(event.currentTarget.checked)}
         />
         <Space h={16} />
