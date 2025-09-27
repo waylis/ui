@@ -21,12 +21,13 @@ import { useCommandStore } from "../store/commands";
 import { useMessageStore } from "../store/messages";
 import { useSettingsStore } from "../store/settings";
 import { useLighterSchemeColor } from "../hooks/useColors";
-import { formatBytes } from "../utils/number";
+import { formatBytes, formatThousands } from "../utils/number";
 import { getMimeCategory } from "../utils/mime";
 import { errNotify, warnNotify } from "../utils/notifications";
 import { MarkdownPreview } from "../components/markdown-preview";
 import ComponentErrorBoundary from "../components/component-error-boundary";
 import styles from "./message-area.module.css";
+import { getYAxisDomain } from "../utils/charts";
 
 export const MessageArea = () => {
   const isFirstRender = useRef(true);
@@ -181,9 +182,11 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
     return message.body.content.toString();
   };
 
+  const isNonText = NON_TEXT_CONTENT_TYPES.includes(message.body.type);
+
   return (
     <Paper bg={isUser ? bgColor : undefined} p="sm" my="xs" radius="md">
-      {NON_TEXT_CONTENT_TYPES.includes(message.body.type) ? (
+      {isNonText ? (
         content()
       ) : (
         <Text style={{ overflowWrap: "anywhere" }} c={isCommand ? primaryColor : undefined}>
@@ -274,11 +277,16 @@ const LineChartPreview: FC<{ params: LineChart }> = ({ params }) => {
   return (
     <div>
       <LineChartComponent
-        {...params}
-        h={params.height || 300}
+        data={params.data}
+        dataKey={params.dataKey}
+        series={params.series}
         curveType={params.curveType || "linear"}
-        tickLine="xy"
-        gridAxis="xy"
+        h={300}
+        valueFormatter={formatThousands}
+        yAxisProps={{
+          domain: getYAxisDomain(params.data, params.series),
+        }}
+        {...params.extra}
       />
     </div>
   );
@@ -288,7 +296,7 @@ const TablePreview: FC<{ params: Table }> = ({ params }) => {
   return (
     <TableComponent.ScrollContainer minWidth={300} type="native">
       <TableComponent
-        stickyHeader
+        stickyHeader={params.head?.length > 0}
         highlightOnHover
         withTableBorder
         withColumnBorders

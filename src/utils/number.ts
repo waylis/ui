@@ -8,3 +8,8 @@ export const formatBytes = (bytes: number): string => {
   const display = parseFloat(value.toFixed(2)).toString();
   return `${display} ${sizes[i]}`;
 };
+
+export const formatThousands = (value: number): string => {
+  if (typeof value !== "number" || isNaN(value)) return String(value);
+  return value.toLocaleString("fr-FR");
+};
