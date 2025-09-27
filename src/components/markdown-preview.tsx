@@ -28,6 +28,24 @@ export const MarkdownPreview: FC<{ body: string }> = ({ body }) => {
             </>
           );
         },
+
+        img: ({ node, ...props }) => {
+          return (
+            <img
+              {...props}
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                maxHeight: "75vh",
+                borderRadius: "0.25rem",
+                margin: 0,
+                padding: 0,
+              }}
+              alt={props.alt || "Image"}
+              loading="lazy"
+            />
+          );
+        },
       }}
       remarkPlugins={[remarkGfm]}
     >
