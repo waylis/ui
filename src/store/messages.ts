@@ -38,9 +38,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
 
     if (offset === 0) {
       const lastSystemMessage = messages.find((m) => m.senderID === "system");
-      const currentReply = lastSystemMessage
-        ? { to: lastSystemMessage.id, restriction: lastSystemMessage.reply }
-        : null;
+      const currentReply = lastSystemMessage ? { to: lastSystemMessage.id, expected: lastSystemMessage.reply } : null;
 
       set({ messages: messages.reverse(), currentReply, lastMessageID: messages.at(-1)?.id, endReached });
     } else {
