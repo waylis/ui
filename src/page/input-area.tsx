@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { Button, FileInput, Flex, Loader, MultiSelect, NumberInput, Paper, Select, Textarea } from "@mantine/core";
+import {
+  Button,
+  Divider,
+  FileInput,
+  Flex,
+  Loader,
+  MultiSelect,
+  NumberInput,
+  Paper,
+  Select,
+  Textarea,
+} from "@mantine/core";
 import { Spotlight, spotlight } from "@mantine/spotlight";
 import { DateTimePicker } from "@mantine/dates";
 import type {
@@ -11,6 +22,7 @@ import type {
   OptionLimits,
   OptionsLimits,
 } from "@waylis/shared";
+import { useViewportSize } from "@mantine/hooks";
 import { api } from "../api/api";
 import { formatBytes } from "../utils/number";
 import { useChatStore } from "../store/chats";
@@ -25,6 +37,7 @@ const MAX_INPUT_AREA_WIDTH = 760;
 export const InputArea = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const unblockTimeout = useRef(0);
+  const { width } = useViewportSize();
   const currentReply = useMessageStore((s) => s.currentReply);
   const messages = useMessageStore((s) => s.messages);
   const activeChat = useChatStore((s) => s.activeChat);
@@ -55,47 +68,54 @@ export const InputArea = () => {
   }, [messages]);
 
   return (
-    <Flex w="100%" justify="center" pb="xs">
-      <Paper
-        w="100%"
-        maw={Math.min(maxWidth, MAX_INPUT_AREA_WIDTH)}
-        p="sm"
-        mih={100}
-        radius="md"
-        style={{ display: "flex", alignItems: "center" }}
-      >
-        {isBlocked ? (
-          <Flex flex={1} justify="center" align="center">
-            <Loader variant="dots" type="dots" />
-          </Flex>
-        ) : (
-          <>
-            <CommandPicker hidden={!!currentReply?.expected} chat={activeChat} />
+    <>
+      {width < MAX_INPUT_AREA_WIDTH && <Divider />}
+      <Flex w="100%" justify="center">
+        <Paper
+          w="100%"
+          maw={Math.min(maxWidth, MAX_INPUT_AREA_WIDTH)}
+          p="sm"
+          mih={90}
+          radius="md"
+          style={{ display: "flex", alignItems: "center" }}
+        >
+          {isBlocked ? (
+            <Flex flex={1} justify="center" align="center">
+              <Loader variant="dots" type="dots" />
+            </Flex>
+          ) : (
+            <>
+              <CommandPicker hidden={!!currentReply?.expected} chat={activeChat} />
 
-            {currentReply?.expected?.bodyType === "text" && <TextForm currentReply={currentReply} chat={activeChat!} />}
-            {currentReply?.expected?.bodyType === "number" && (
-              <NumberForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.expected?.bodyType === "boolean" && (
-              <BooleanForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.expected?.bodyType === "datetime" && (
-              <DatetimeForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.expected?.bodyType === "option" && (
-              <OptionForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.expected?.bodyType === "options" && (
-              <OptionsForm currentReply={currentReply} chat={activeChat!} />
-            )}
-            {currentReply?.expected?.bodyType === "file" && <FileForm currentReply={currentReply} chat={activeChat!} />}
-            {currentReply?.expected?.bodyType === "files" && (
-              <FilesForm currentReply={currentReply} chat={activeChat!} />
-            )}
-          </>
-        )}
-      </Paper>
-    </Flex>
+              {currentReply?.expected?.bodyType === "text" && (
+                <TextForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "number" && (
+                <NumberForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "boolean" && (
+                <BooleanForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "datetime" && (
+                <DatetimeForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "option" && (
+                <OptionForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "options" && (
+                <OptionsForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "file" && (
+                <FileForm currentReply={currentReply} chat={activeChat!} />
+              )}
+              {currentReply?.expected?.bodyType === "files" && (
+                <FilesForm currentReply={currentReply} chat={activeChat!} />
+              )}
+            </>
+          )}
+        </Paper>
+      </Flex>
+    </>
   );
 };
 
@@ -160,6 +180,7 @@ const TextForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" pos="relative">
       <Textarea
+        name="text-input"
         variant="filled"
         w="100%"
         autoFocus
