@@ -6,6 +6,89 @@ body {
     overflow: hidden;
 }
 
+:root{
+  --link-color: #0a66ff;
+  --link-hover: #084ecf;
+  --link-underline: rgba(10,102,255,0.18);
+  --link-focus: 3px;
+  --link-radius: 2px;
+  --transition-fast: 160ms;
+}
+
+/* Base reset for all links — minimal, accessible */
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  text-underline-offset: 4px;
+  text-decoration-skip-ink: auto;
+  outline: none;
+  transition: color var(--transition-fast) ease,
+              background-size var(--transition-fast) ease,
+              transform var(--transition-fast) ease;
+  cursor: pointer;
+}
+
+/* subtle hover: thicker underline from 0 to full width */
+a:hover,
+a:focus {
+  color: var(--link-hover);
+  background-size: 100% 2px;
+  transform: translateY(-1px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* keyboard focus visible ring (accessible) */
+a:focus-visible {
+  box-shadow: 0 0 0 var(--link-focus) rgba(10,102,255,0.12);
+  border-radius: var(--link-radius);
+}
+
+/* visited state kept subtle */
+a:visited {
+  color: color-mix(in srgb, var(--link-color) 65%, #000 35%); /* graceful darkening */
+}
+
+/* external links: small inline indicator (SVG) */
+a[target="_blank"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: .28em;
+  vertical-align: -0.15em;
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: .8;
+}
+
+/* disabled links (semantic) */
+a[aria-disabled="true"], a.is-disabled {
+  pointer-events: none;
+  color: gray;
+  background-size: 0 0;
+  transform: none;
+  cursor: default;
+  opacity: .6;
+}
+
+/* dark mode tweak */
+:root[data-mantine-color-scheme="dark"] {
+    --link-color: #66b0ff;
+    --link-hover: #9ed1ff;
+    --link-underline: rgba(102,176,255,0.12);
+    --link-focus: 4px;
+}
+
+/* respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  a { transition: none; transform: none; }
+}
+
+
 :root[data-mantine-color-scheme="dark"] {
     --mantine-color-body: #212121 !important;
 }
