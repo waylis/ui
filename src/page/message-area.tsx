@@ -12,7 +12,7 @@ import {
   type TableData,
 } from "@mantine/core";
 import { LineChart as LineChartComponent } from "@mantine/charts";
-import { useEffect, useRef, useState, type FC, type RefObject } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type FC, type RefObject } from "react";
 import type { Command, FileMeta, LineChart, Message, OptionLimits, Table } from "@waylis/shared";
 import { AppInfo } from "./app-info";
 import { api } from "../api/api";
@@ -38,6 +38,12 @@ export const MessageArea = () => {
   const maxWidth = useSettingsStore((s) => s.maxMessageWidth);
   const showMessageTimes = useSettingsStore((s) => s.showMessageTimes);
   const theme = useMantineTheme();
+
+  const messageById = useMemo(() => {
+    const map = new Map<string, Message>();
+    for (const m of messages) map.set(m.id, m);
+    return map;
+  }, [messages]);
 
   const scrollToBottom = () => viewport.current?.scrollTo({ top: viewport.current!.scrollHeight, behavior: "smooth" });
 
@@ -65,11 +71,13 @@ export const MessageArea = () => {
               const isNextNoTimeDiff =
                 nextMessage && new Date(nextMessage.createdAt).getTime() - new Date(message.createdAt).getTime() < 1000;
 
+              const replyToMessage = message.replyTo ? messageById.get(message.replyTo) : undefined;
+
               return (
                 <ComponentErrorBoundary key={message.id}>
                   <ChatMessage
                     message={message}
-                    messages={messages}
+                    replyToMessage={replyToMessage}
                     commands={commands}
                     primaryColor={theme.primaryColor}
                     withoutTime={!showMessageTimes || (isNextSystem && isNextNoTimeDiff)}
@@ -118,25 +126,22 @@ const LoadMoreButton: FC<{ viewport: RefObject<HTMLDivElement | null> }> = ({ vi
 
 interface ChatMessageProps {
   message: Message;
-  messages: Message[];
   commands: Command[];
   primaryColor: string;
+  replyToMessage?: Message;
   withoutTime?: boolean;
 }
 
-function resolveOptionLabels(values: string[], message: Message, messages: Message[]): string[] {
-  if (!message.replyTo) return values;
+function resolveOptionLabels(values: string[], message: Message, replyToMessage?: Message): string[] {
+  if (!message.replyTo || !replyToMessage) return values;
 
-  const sys = messages.find((m) => m.id === message.replyTo);
-  if (!sys) return values;
-
-  const options = (sys.reply?.bodyLimits as OptionLimits).options;
+  const options = (replyToMessage.reply?.bodyLimits as OptionLimits).options;
   return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
 }
 
 const NON_TEXT_CONTENT_TYPES = ["file", "files", "markdown", "linechart", "table"];
 
-const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primaryColor, withoutTime }) => {
+const ChatMessage: FC<ChatMessageProps> = memo(({ message, replyToMessage, commands, primaryColor, withoutTime }) => {
   const isUser = message.senderID !== "system";
   const bgColor = useLighterSchemeColor();
   const isCommand = message.body.type === "command";
@@ -152,11 +157,11 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
     if (message.body.type === "datetime") return new Date(message.body.content).toLocaleString();
 
     if (message.body.type === "option") {
-      return resolveOptionLabels([message.body.content], message, messages)[0];
+      return resolveOptionLabels([message.body.content], message, replyToMessage)[0];
     }
 
     if (message.body.type === "options") {
-      return resolveOptionLabels(message.body.content, message, messages).join(", ");
+      return resolveOptionLabels(message.body.content, message, replyToMessage).join(", ");
     }
 
     if (message.body.type === "file") {
@@ -204,7 +209,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, messages, commands, primar
       )}
     </Paper>
   );
-};
+});
 
 const FilePreview: FC<{ file: FileMeta }> = ({ file }) => {
   const [error, setError] = useState(false);
