@@ -12,6 +12,8 @@ import { useMessageStore } from "../store/messages";
 import { errNotify } from "../utils/notifications";
 import { useEventSourceStore } from "../store/events";
 
+const SYSTEM_RESPONSE_DELAY_MS = 500;
+
 export const Page = () => {
   const [loading, setLoading] = useState(false);
   const setChatPageLimit = useChatStore((s) => s.setPageLimit);
@@ -49,10 +51,17 @@ export const Page = () => {
 
       addEventHandler("newSystemResponse", async (e) => {
         const messages = JSON.parse(e.data) as Message[];
+        let lastAt = useMessageStore.getState().lastUserReplyAt || new Date();
+
         for (const message of messages) {
-          await delay(500); // Need to prevent instant repsponses
+          const diff = Date.now() - lastAt.getTime();
+          if (diff < SYSTEM_RESPONSE_DELAY_MS) {
+            await delay(SYSTEM_RESPONSE_DELAY_MS - diff);
+          }
+
           appendMessage(message);
           setCurrentReply(message);
+          lastAt = new Date();
         }
       });
     } catch (error) {

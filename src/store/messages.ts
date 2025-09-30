@@ -15,6 +15,7 @@ interface MessageStore {
   limit: number;
   endReached: boolean;
   lastMessageID?: string;
+  lastUserReplyAt?: Date;
 
   fetchMessages(chatID: string): Promise<Message[]>;
   sendMessage(params: CreateUserMessageParams): Promise<Message>;
@@ -49,6 +50,7 @@ export const useMessageStore = create<MessageStore>()((set, get) => ({
   },
 
   async sendMessage(params: CreateUserMessageParams) {
+    set({ lastUserReplyAt: new Date() });
     const message = await api.sendMessage(params);
     set({ messages: [...get().messages, message], lastMessageID: message.id });
     return message;
