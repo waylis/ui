@@ -100,8 +100,8 @@ class API {
     setTimeout(() => URL.revokeObjectURL(link.href), 5000);
   }
 
-  async uploadFile(file: File) {
-    const url = this.endpoint("file");
+  async uploadFile(file: File, replyTo: string) {
+    const url = this.endpoint("file") + queryParams({ reply_to: replyTo });
     const filename = file.name;
 
     const res = await fetch(url, {

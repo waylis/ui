@@ -412,7 +412,7 @@ const FileForm: FC<FormProps> = ({ chat, currentReply }) => {
         return;
       }
 
-      const content = await api.uploadFile(file);
+      const content = await api.uploadFile(file, currentReply.to);
       await sendMessage({ body: { type: "file", content }, chatID: chat.id, replyTo: currentReply.to });
     } catch (error) {
       errNotify(error);
@@ -457,7 +457,7 @@ const FilesForm: FC<FormProps> = ({ chat, currentReply }) => {
           return;
         }
 
-        requests.push(api.uploadFile(file));
+        requests.push(api.uploadFile(file, currentReply.to));
       }
 
       const content = await Promise.all(requests);
