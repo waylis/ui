@@ -135,7 +135,7 @@ interface ChatMessageProps {
 function resolveOptionLabels(values: string[], message: Message, replyToMessage?: Message): string[] {
   if (!message.replyTo || !replyToMessage) return values;
 
-  const options = (replyToMessage.reply?.bodyLimits as OptionLimits).options;
+  const options = (replyToMessage.reply?.bodyLimits as OptionLimits)?.options;
   return values.map((v) => options.find((o) => o.value === v)?.label ?? v);
 }
 

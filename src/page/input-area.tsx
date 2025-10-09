@@ -306,8 +306,8 @@ const DatetimeForm: FC<FormProps> = ({ chat, currentReply }) => {
   return (
     <Flex gap={8} w="100%" align="center" justify="center">
       <DateTimePicker
-        minDate={(currentReply.expected?.bodyLimits as DatetimeLimits).min}
-        maxDate={(currentReply.expected?.bodyLimits as DatetimeLimits).max}
+        minDate={(currentReply.expected?.bodyLimits as DatetimeLimits)?.min}
+        maxDate={(currentReply.expected?.bodyLimits as DatetimeLimits)?.max}
         w={220}
         value={value}
         onChange={(date) => setValue(date ? new Date(date) : null)}
@@ -341,7 +341,7 @@ const OptionForm: FC<FormProps> = ({ chat, currentReply }) => {
       <Select
         flex={1}
         miw={200}
-        data={(currentReply.expected?.bodyLimits as OptionLimits).options.map((o) => ({
+        data={(currentReply.expected?.bodyLimits as OptionLimits)?.options?.map((o) => ({
           value: o.value,
           label: o.label ?? o.value,
         }))}
@@ -380,12 +380,12 @@ const OptionsForm: FC<FormProps> = ({ chat, currentReply }) => {
       <MultiSelect
         flex={1}
         miw={200}
-        data={(currentReply.expected?.bodyLimits as OptionsLimits).options.map((o) => ({
+        data={(currentReply.expected?.bodyLimits as OptionsLimits)?.options?.map((o) => ({
           value: o.value,
           label: o.label ?? o.value,
         }))}
         searchable
-        maxValues={(currentReply.expected?.bodyLimits as OptionsLimits).maxAmount}
+        maxValues={(currentReply.expected?.bodyLimits as OptionsLimits)?.maxAmount}
         comboboxProps={{ position: "top", middlewares: { flip: false, shift: false } }}
         value={value}
         onChange={setValue}
