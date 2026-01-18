@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import {
+  ActionIcon,
   Button,
   Divider,
   FileInput,
@@ -10,6 +11,7 @@ import {
   Paper,
   Select,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
 import { Spotlight, spotlight } from "@mantine/spotlight";
 import { DateTimePicker } from "@mantine/dates";
@@ -30,6 +32,7 @@ import { useCommandStore } from "../store/commands";
 import { errNotify, warnNotify } from "../utils/notifications";
 import { useMessageStore, type CurrentReply } from "../store/messages";
 import { useSettingsStore } from "../store/settings";
+import { IconRepeat } from "../icons";
 
 const MAX_RESPONSE_WAIT_TIME_MS = 5000;
 const MAX_INPUT_AREA_WIDTH = 760;
@@ -46,6 +49,12 @@ export const InputArea = () => {
   const handleUnblockInput = () => {
     clearTimeout(unblockTimeout.current);
     setIsBlocked(false);
+  };
+
+  const lastCommand = () => {
+    const lastCommand = messages.findLast((message) => message.body.type === "command");
+    if (!lastCommand) return null;
+    return lastCommand.body.content as string;
   };
 
   useEffect(() => {
@@ -85,7 +94,7 @@ export const InputArea = () => {
             </Flex>
           ) : (
             <>
-              <CommandPicker hidden={!!currentReply?.expected} chat={activeChat} />
+              <CommandPicker hidden={!!currentReply?.expected} chat={activeChat} lastCommand={lastCommand} />
 
               {currentReply?.expected?.bodyType === "text" && (
                 <TextForm currentReply={currentReply} chat={activeChat!} />
@@ -119,10 +128,15 @@ export const InputArea = () => {
   );
 };
 
-const CommandPicker: FC<{ chat: Chat | null; hidden: boolean }> = ({ chat, hidden }) => {
+const CommandPicker: FC<{ chat: Chat | null; hidden: boolean; lastCommand: () => string | null }> = ({
+  chat,
+  hidden,
+  lastCommand,
+}) => {
   const commands = useCommandStore((s) => s.commands);
   const sendMessage = useMessageStore((s) => s.sendMessage);
   const createChat = useChatStore((s) => s.createChat);
+  const last = lastCommand();
 
   const sendCommand = async (value: string) => {
     const currentChat = chat ?? (await createChat("My first chat"));
@@ -130,8 +144,25 @@ const CommandPicker: FC<{ chat: Chat | null; hidden: boolean }> = ({ chat, hidde
   };
 
   return (
-    <Flex display={hidden ? "none" : undefined} w="100%" justify="center">
-      <Button onClick={spotlight.open}>Pick command</Button>
+    <Flex display={hidden ? "none" : undefined} w="100%" gap={4} justify="center" align="center">
+      <Button.Group>
+        <Button onClick={spotlight.open}>Pick command</Button>
+
+        {last && (
+          <Tooltip label="Repeat last command">
+            <ActionIcon
+              onClick={() => sendCommand(last)}
+              size={36}
+              radius={"0 0.25rem 0.25rem 0"}
+              color="dimmed"
+              variant="default"
+            >
+              <IconRepeat width={20} height={20} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Button.Group>
+
       <Spotlight
         centered
         scrollable
