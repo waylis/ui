@@ -12,11 +12,21 @@ export default defineConfig({
   },
 
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          recharts: ["recharts"],
-          mantineCharts: ["@mantine/charts"],
+        codeSplitting: {
+          groups: [
+            {
+              name: "react",
+              test: /node_modules[\\/]react/,
+              priority: 2,
+            },
+            {
+              name: "recharts",
+              test: /node_modules[\\/]recharts/,
+              priority: 1,
+            },
+          ],
         },
       },
     },
